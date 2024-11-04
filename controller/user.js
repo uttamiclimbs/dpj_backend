@@ -24,24 +24,19 @@ const hash = {
     },
 };
 
-// Web
-
-// Login 
 
 // Regular User Login 
 
 userRouter.post("/login", async (req, res) => {
     try {
-        const { phoneno, password } = req.body
-        const userExists = await UserModel.find({ phoneno })
+        const { email, password } = req.body
+        const userExists = await UserModel.find({ email })
         if (userExists.length === 0) {
             return res.json({ status: "error", message: "No User Exists With This PhoneNo", redirect: "/user/register" })
         } else {
-            if (userExists[0].verified.phone === false) {
-                res.json({ status: "error", message: "Please Verify Your Phone No First", token: userExists[0].signuptoken, redirect: "/user/otp-verification" })
-            } else if (hash.sha256(password) === userExists[0].password) {
+            if (hash.sha256(password) === userExists[0].password) {
                 let token = jwt.sign({
-                    _id: userExists[0]._id, name: userExists[0].name, email: userExists[0].email, phoneno: userExists[0].phoneno, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
+                    _id: userExists[0]._id, name: userExists[0].name, email: userExists[0].email, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
                 }, "Authentication")
                 res.json({ status: "success", message: "Login Successful", token: token })
             } else if (hash.sha256(password) !== userExists[0].password) {
@@ -83,31 +78,27 @@ userRouter.post("/login/admin", async (req, res) => {
 
 userRouter.post("/register", async (req, res) => {
     try {
-        const { name, email, phoneno } = req.body
-        const userExists = await UserModel.find({ phoneno })
+        const { name, email, password } = req.body
+        const userExists = await UserModel.find({ email })
         if (userExists.length >= 1) {
-            res.json({ status: "error", message: "User Already Exists with this Phone Number. Please Try another Phone No", redirect: "/user/login" })
+            res.json({ status: "error", message: "User Already Exists with this Email ID. Please Try again with another Email ID", redirect: "/user/login" })
         } else {
             const user = new UserModel({
                 name,
                 email,
-                phoneno,
-                signuptoken: jwt.sign({ name: name, email: email, phoneno: phoneno, exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30) }, "Registration"),
-                otp: otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false }),
-                password: null
+                password: hash.sha256(password),
             })
             try {
                 await user.save()
+                console.log("user ",user);
+                
+                let token = jwt.sign({
+                    _id:user._id, name: user.name, email: user.email, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
+                }, "Authentication")
+                res.json({ status: "success", message: "Registration Successful", token: token })
             } catch (error) {
                 res.json({ status: "error", message: `Failed To Register User ${error.message}` })
             }
-            fetch(`https://2factor.in/API/V1/${process.env.twofactorkey}/SMS/${user.phoneno}/${user.otp}/Airpax`)
-                .then((response) => response.json())
-                .then((data) => {
-                    data.Status === 'Success' ?
-                        res.json({ status: "success", message: "User Registration Successful. Please Check Your Phone For OTP", redirect: "/user/otp-verification", token: user.signuptoken })
-                        : res.json({ status: "error", message: "User Registration UnSuccessful. Failed to Send OTP. PLease Try again Aftersome Time", redirect: "/user/otp-verification", token: user.signuptoken })
-                });
         }
     } catch (error) {
         res.json({ status: "error", message: `Error Found in User Registration ${error}` })

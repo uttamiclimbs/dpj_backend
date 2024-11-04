@@ -15,12 +15,14 @@ const userschema = mongoose.Schema({
   },
   email: {
     type: String,
+    required:true
   },
   phoneno: {
     type: Number,
   },
   password: {
-    type: String
+    type: String,
+    required:true
   },
   otp: {
     type: Number
@@ -46,8 +48,8 @@ const userschema = mongoose.Schema({
   },
   accounttype: {
     type: String,
-    enum: ["user", "admin", "conductor", "driver"], // Replace with your allowed values
-    default: "user"
+    enum: ["artist", "business", "guest"], // Replace with your allowed values
+    default: "artist"
   },
   disabled: {
     type: Boolean,
