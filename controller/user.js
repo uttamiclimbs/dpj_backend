@@ -105,104 +105,24 @@ userRouter.post("/register", async (req, res) => {
     }
 })
 
-// User Registration Step 2 Otp Verification For Phone No
-
-userRouter.post("/otp/verification", RegistrationAuthentication, async (req, res) => {
-    const signuptoken = req.headers.authorization.split(" ")[1]
-    try {
-        const { otp } = req.body
-        if (otp.length !== 6) {
-            res.json({ status: "error", message: "Otp Must Of 6 Digit's in Length " })
-        }
-        const user = await UserModel.find({ signuptoken: signuptoken, otp: otp })
-        user[0].verified.phone = true;
-        user[0].otp = null;
-        try {
-            await user[0].save()
-        } catch (error) {
-            res.json({ status: "error", message: `Failed To Update User Detail's ${error.message}` })
-        }
-        if (user.length >= 1 && user[0].password !== null) { // Password Already Created By the User
-            let token = jwt.sign({
-                _id: user[0]._id, name: user[0].name, email: user[0].email, phoneno: user[0].phoneno, exp: Math.floor(Date.now() / 1000) + (60 * 60)
-            }, "Authentication")
-            res.json({ status: "success", message: "Otp Verification Successful", token: token, redirect: "/" })
-        } else if (user.length >= 1 && user[0].password == null) {
-            res.json({ status: "success", message: "Otp Verification Successful", redirect: "/user/create-password" })
-        } else if (user.length === 0) {
-            res.json({ status: "error", message: "No User Found For OTP Verification", })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Your Otp Verification is Unsuccessful. ${error.message}` })
-    }
-})
-
-// User Registration Step 2.1 Resend OTP 
-userRouter.get("/otp/resend", RegistrationAuthentication, async (req, res) => {
-    const signuptoken = req.headers.authorization.split(" ")[1]
-    try {
-        const user = await UserModel.find({ signuptoken: signuptoken })
-        fetch(`https://2factor.in/API/V1/${process.env.twofactorkey}/SMS/${user[0].phoneno}/${user[0].otp}/Airpax`)
-            .then((response) => response.json())
-            .then((data) => {
-                data.Status === 'Success' ?
-                    res.json({ status: "success", message: "Please Check Your Phone For OTP" })
-                    : res.json({ status: "error", message: "Failed to Send OTP. PLease Try again Aftersome Time" })
-            });
-    } catch (error) {
-        res.json({ status: "error", message: `Unable To Send OTP ${error.message}` })
-    }
-})
-
-// User Registration Step 3 Create Password 
-userRouter.post("/password/create", RegistrationAuthentication, async (req, res) => {
-    const signuptoken = req.headers.authorization.split(" ")[1]
-    try {
-        const { password, cnfpassword } = req.body
-        if (password === cnfpassword) {
-            const user = await UserModel.find({ signuptoken: signuptoken })
-            if (user.length >= 1 && user[0].verified.phone == true) {
-                user[0].password = hash.sha256(password)
-                user[0].signuptoken = null
-                try {
-                    await user[0].save()
-                } catch (error) {
-                    res.json({ status: "error", message: "Unable To Set Password For User", redirect: "/" })
-                }
-                let token = jwt.sign({
-                    _id: user[0]?._id, name: user[0]?.name, email: user[0]?.email, phoneno: user[0]?.phoneno, exp: Math.floor(Date.now() / 1000) + (60 * 60)
-                }, "Authentication")
-                res.json({ status: "success", message: "Login Successful", token: token, redirect: "/" })
-            } else {
-                res.json({ status: "error", message: "No User Found With This Token ID", redirect: "/" })
-            }
-        } else {
-            res.json({ status: "error", message: "Password & Confirm Password Doesn't Match" })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Error Found in Password Creation ${error.message}` })
-    }
-})
-
-
 // Forgot Password Step 1 Sending Otp in Email
 
 userRouter.post("/forgot", async (req, res) => {
     try {
-        const { phoneno } = req.body
-        const userExists = await UserModel.find({ phoneno })
+        const { email } = req.body
+        const userExists = await UserModel.find({ email })
         if (userExists.length === 0) {
-            return res.json({ status: "error", message: "No User Exists Please SignUp First", redirect: "/user/register" })
+            return res.json({ status: "error", message: "No User Exists With This Email, Please SignUp First", redirect: "/user/register" })
         } else {
             let newotp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
-            let forgotpasswordtoken = jwt.sign({ name: userExists[0].name, email: userExists[0].email, phoneno: userExists[0].phoneno, exp: Math.floor(Date.now() / 1000) + (60 * 15) }, "Registration");
+            let forgotpasswordtoken = jwt.sign({ name: userExists[0].name, email: userExists[0].email, exp: Math.floor(Date.now() / 1000) + (60 * 15) }, "Registration");
             let link = `${process.env.domainurl}${newotp}/${forgotpasswordtoken}`
             userExists[0].otp = newotp;
             userExists[0].forgotpasswordtoken = forgotpasswordtoken
             try {
                 await userExists[0].save()
             } catch (error) {
-                return res.json({ status: "error", message: "Failed To Save User New OTP", redirect: "/" })
+                return res.json({ status: "error", message: "Failed To Save Use", redirect: "/" })
             }
             let forgotPasswordtemplate = path.join(__dirname, "../emailtemplate/forgotPassword.ejs")
             ejs.renderFile(forgotPasswordtemplate, { link: link }, function (err, template) {
