@@ -4,10 +4,10 @@ const AdminAuthentication = (req, res, next) => {
         try {
             const token = req.headers.authorization.split(" ")[1]
             const decoded = jwt.verify(token, 'Authorization')
-            if (decoded.accounttype === "admin" || decoded.accounttype === "conductor" || decoded.accounttype === "driver" ) {
+            if (decoded.accounttype === "admin" ) {
                 next()
             } else {
-                res.json({ status: "error", message: "Admin Permission's Not Found In Your Account" })
+                res.json({ status: "error", message: "Admin Permission Not Found In Your Account" })
             }
         } catch (error) {
             res.json({ status: "error", message: "Token Expired. Please Login Again" })

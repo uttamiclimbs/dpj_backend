@@ -15,14 +15,14 @@ const userschema = mongoose.Schema({
   },
   email: {
     type: String,
-    required:true
+    required: true
   },
   phoneno: {
     type: Number,
   },
   password: {
     type: String,
-    required:true
+    required: true
   },
   otp: {
     type: Number
@@ -46,10 +46,19 @@ const userschema = mongoose.Schema({
   picture: {
     type: String
   },
-  accounttype: {
+  accountType: {
     type: String,
-    enum: ["artist", "business", "guest"], // Replace with your allowed values
-    default: "artist"
+    enum: ["artist", "professional", "guest", "admin"], // Replace with your allowed values
+  },
+  documentType:{
+    type:String
+  },
+  document:{
+    type:String,
+  },
+  verified:{
+    type:Boolean,
+    default: false
   },
   disabled: {
     type: Boolean,

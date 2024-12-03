@@ -1,17 +1,29 @@
 require('dotenv').config()
+const ejs = require("ejs")
 const jwt = require('jsonwebtoken');
-const otpGenerator = require('otp-generator')
+const path = require("node:path");
+const crypt = require("crypto");
+const multer = require("multer");
+const uploadPath = path.join(__dirname, "../public/documents");
 const express = require("express")
 const { oauth2client } = require("../service/googleConfig");
 const { UserModel } = require("../model/user.model");
-const { RegistrationAuthentication } = require('../middleware/Registration');
-const { UserAuthentication } = require('../middleware/Authentication');
-const { AdminAuthentication } = require('../middleware/Authorization');
 const { transporter } = require('../service/transporter');
+const { UserAuthentication } = require('../middleware/Authentication');
+const { DocumentModel } = require('../model/document.model');
 const userRouter = express.Router()
-const ejs = require("ejs")
-const path = require('node:path');
-const crypt = require("crypto");
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadPath);
+    },
+    filename: function (req, file, cb) {
+        let uniqueSuffix = Date.now();
+        cb(null, uniqueSuffix + file.originalname);
+    },
+});
+
+const upload = multer({ storage: storage });
+
 const hash = {
     sha256: (data) => {
         return crypt.createHash("sha256").update(data).digest("hex");
@@ -32,13 +44,17 @@ userRouter.post("/login", async (req, res) => {
         const { email, password } = req.body
         const userExists = await UserModel.find({ email })
         if (userExists.length === 0) {
-            return res.json({ status: "error", message: "No User Exists With This PhoneNo", redirect: "/user/register" })
+            return res.json({ status: "error", message: "No User Exists With This Email ID", redirect: "/user/register" })
         } else {
             if (hash.sha256(password) === userExists[0].password) {
-                let token = jwt.sign({
-                    _id: userExists[0]._id, name: userExists[0].name, email: userExists[0].email, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
-                }, "Authentication")
-                res.json({ status: "success", message: "Login Successful", token: token })
+                if (userExists[0].accounttype !== "admin") {
+                    let token = jwt.sign({
+                        _id: userExists[0]._id, name: userExists[0].name, email: userExists[0].email, accountType: userExists[0].accountType, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
+                    }, "Authentication")
+                    res.json({ status: "success", message: "Login Successful", token: token })
+                } else {
+                    res.json({ status: "error", message: "You Can Not Use Admin Credentials To Login !!" })
+                }
             } else if (hash.sha256(password) !== userExists[0].password) {
                 res.json({ status: "error", message: "Wrong Password Please Try Again" })
             }
@@ -90,12 +106,7 @@ userRouter.post("/register", async (req, res) => {
             })
             try {
                 await user.save()
-                console.log("user ",user);
-                
-                let token = jwt.sign({
-                    _id:user._id, name: user.name, email: user.email, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
-                }, "Authentication")
-                res.json({ status: "success", message: "Registration Successful", token: token })
+                res.json({ status: "success", message: "Registration Successful", redirect: "/user/login" })
             } catch (error) {
                 res.json({ status: "error", message: `Failed To Register User ${error.message}` })
             }
@@ -153,77 +164,6 @@ userRouter.post("/forgot", async (req, res) => {
     }
 })
 
-
-// New Password Created By the User Step 2 Storing New Password 
-
-
-userRouter.post("/password/change", async (req, res) => {
-    const { otp } = req.headers
-    const token = req.headers.authorization.split(" ")[1]
-    try {
-        const { password, cnfpassword } = req.body
-        if (password === cnfpassword) {
-            const user = await UserModel.find({ forgotpasswordtoken: token, otp: otp })
-            if (user.length >= 1) { // Removed  (&& user[0].verified.phone == true)
-                user[0].password = hash.sha256(password)
-                user[0].forgotpasswordtoken = null
-                user[0].otp = null
-                try {
-                    await user[0].save()
-                    res.json({ status: "success", message: "Password Changed Successfully Please Login Now !!", redirect: "/user/login" })
-                } catch (error) {
-                    res.json({ status: "error", message: "Unable To Reset Your Password Please Try Again ", redirect: "/user/login" })
-                }
-            } else {
-                res.json({ status: "error", message: "No User Found ", redirect: "/user/login" })
-            }
-        } else {
-            res.json({ status: "error", message: "Password & Confirm Password Doesn't Match" })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Error Found in Changing Password  ${error.message}` })
-    }
-})
-
-
-
-// Mobile
-
-
-// Send New Otp in the User To Initiate Password Change in User.
-
-// Module to Send Otp on Phone
-
-// userRouter.post("/forgot/phone", async (req, res) => {
-//     try {
-//         const { phoneno } = req.body
-//         const userExists = await UserModel.find({ phoneno })
-//         if (userExists.length === 0) {
-//             return res.json({ status: "error", message: "No User Exists Please SignUp First", redirect: "/user/register" })
-//         } else {
-//             let newotp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false });
-//             let forgotpasswordtoken = jwt.sign({ name: userExists[0].name, email: userExists[0].email, phoneno: userExists[0].phoneno, exp: Math.floor(Date.now() / 1000) + (60 * 15) }, "Registration");
-//             userExists[0].otp = newotp;
-//             userExists[0].forgotpasswordtoken = forgotpasswordtoken
-//             try {
-//                 await userExists[0].save()
-//             } catch (error) {
-//                 return res.json({ status: "error", message: "Failed To Save User New OTP", redirect: "/" })
-//             }
-//             fetch(`https://2factor.in/API/V1/${process.env.twofactorkey}/SMS/${userExists[0].phoneno}/${userExists[0].otp}/Airpax`)
-//                 .then((response) => response.json())
-//                 .then((data) => {
-//                     data.Status === 'Success' ?
-//                         res.json({ status: "success", message: "Please Check Your Phone For OTP", redirect: "/user/otp-verification", token: userExists[0].forgotpasswordtoken })
-//                         : res.json({ status: "error", message: "Failed to Send OTP. PLease Try again Aftersome Time", redirect: "/" })
-//                 });
-//         }
-//     }
-//     catch (error) {
-//         res.json({ status: "error", message: `Error Found in Login Section ${error.message}` })
-//     }
-// })
-
 // Module to Send Otp on Email
 
 userRouter.post("/forgot/phone", async (req, res) => {
@@ -271,63 +211,6 @@ userRouter.post("/forgot/phone", async (req, res) => {
     }
 })
 
-// New Otp Verification For the User to Change Password.
-
-userRouter.post("/forgot/otp/verification", async (req, res) => {
-    const forgotpasswordtoken = req.headers.authorization.split(" ")[1]
-    try {
-        const { otp } = req.body
-        const userExists = await UserModel.find({ forgotpasswordtoken: forgotpasswordtoken, otp: otp })
-        if (userExists.length === 0) {
-            return res.json({ status: "error", message: "Otp Verification Failed", })
-        } else {
-            try {
-                userExists[0].otp = null;
-                await userExists[0].save
-                return res.json({ status: "success", message: "Otp Verification Successful", })
-            } catch (error) {
-                return res.json({ status: "error", message: "Failed to Verifiy Otp", })
-            }
-        }
-    }
-    catch (error) {
-        res.json({ status: "error", message: `Error Found in Otp Verification For Mobile User's ${error.message}` })
-    }
-})
-
-// Setting New Password For the User's in Phone .
-
-userRouter.post("/forgot/password/change", async (req, res) => {
-    const token = req.headers.authorization.split(" ")[1]
-    try {
-        const { password, cnfpassword } = req.body
-        if (password === cnfpassword) {
-            const user = await UserModel.find({ forgotpasswordtoken: token })
-            if (user.length >= 1) {
-                try {
-                    user[0].password = hash.sha256(password)
-                    user[0].forgotpasswordtoken = null
-                    user[0].verified.email == true
-                    await user[0].save()
-                    res.json({ status: "success", message: "Password Changed Successfully Please Login Now !!", redirect: "/user/login" })
-                } catch (error) {
-                    res.json({ status: "error", message: "You Haven't Made a request to Change Password", redirect: "/user/login" })
-                }
-            } else {
-                res.json({ status: "error", message: "User Not Found !! Token Expired", redirect: "/user/login" })
-            }
-        } else {
-            res.json({ status: "error", message: "Password & Confirm Password Doesn't Match" })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Error Found in Creating New Password  ${error.message}` })
-    }
-})
-
-
-
-// Common 
-
 // Getting Basic User Detail's Like username, email & more which is passed via token
 
 userRouter.get("/me", UserAuthentication, async (req, res) => {
@@ -345,47 +228,6 @@ userRouter.get("/me", UserAuthentication, async (req, res) => {
     }
 })
 
-// Getting Basic Admin User Detail's Like username, email & more which is passed via token
-
-userRouter.get("/admin/me", AdminAuthentication, async (req, res) => {
-    const token = req.headers.authorization.split(" ")[1]
-    try {
-        if (!token) {
-            return res.json({ status: "error", message: "Please Login to Access User Detail's", redirect: "/user/login" })
-        } else {
-            const decoded = jwt.verify(token, 'Authorization')
-            const user = await UserModel.find({ _id: decoded._id })
-            return res.json({ status: "success", message: "Getting User Details", user: user[0] })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Error Found in Login Section ${error.message}` })
-    }
-})
-
-
-// Getting List of All the User's Registered In the Database
-
-userRouter.get("/listall", AdminAuthentication, async (req, res) => {
-    try {
-        const user = await UserModel.find({}, { password: 0, otp: 0, signuptoken: 0, forgotpasswordtoken: 0 })
-        res.json({ status: "success", data: user })
-    } catch (error) {
-        res.json({ status: "error", message: "Failed To Get User List" })
-
-    }
-})
-
-// Getting Detail of a particular user Registered in the Database
-
-userRouter.get("/detailone/:id", AdminAuthentication, async (req, res) => {
-    try {
-        const user = await UserModel.find({ _id: req.params.id }, { password: 0, otp: 0, signuptoken: 0, forgotpasswordtoken: 0 })
-        res.json({ status: "success", data: user })
-    } catch (error) {
-        res.json({ status: "error", message: "Failed to get User Detail's" })
-    }
-})
-
 // Updating User Detail's in the Database.
 
 userRouter.patch("/me/update", UserAuthentication, async (req, res) => {
@@ -399,6 +241,39 @@ userRouter.patch("/me/update", UserAuthentication, async (req, res) => {
         res.json({ status: "error", message: `Failed To Update User Detail's  ${error.message}` })
     }
 })
+
+
+// Step 1 Uploading Documents For Account Verifications :- 
+
+userRouter.post("/documentupload", upload.single("document"), UserAuthentication, async (req, res) => {
+    const token = req.headers.authorization.split(" ")[1]
+    const { accountType, documentType } = req.body;
+    const fileName = req.file.filename;
+
+    const decoded = jwt.verify(token, 'Authentication')
+    const user = await UserModel.find({ _id: decoded._id })
+    try {
+        user[0].accountType = accountType;
+        await user[0].save()
+    } catch (error) {
+        res.json({ status: "error", message: `Error Found while trying to upload Documents ${error.message}` })
+    }
+
+    const documentDetails = new DocumentModel({
+        documentType: documentType,
+        document: fileName,
+        userId: decoded._id
+    })
+
+    try {
+        await documentDetails.save()
+        return res.json({ status: "success", message: "Documents Successfully Uploaded Kindly Wait Till we verify the documents." })
+    } catch (error) {
+        res.json({ status: "error", message: `Error Found while trying to upload Documents ${error.message}` })
+    }
+
+})
+
 
 
 // Register With Google 
@@ -425,81 +300,6 @@ userRouter.get("/register/google", async (req, res) => {
         }
     } catch (error) {
         return res.json({ status: "error", message: `Error Found in User Registration ${error}` })
-    }
-})
-
-
-
-
-// Create Additional Admin User's 
-// Routes to Create Driver & Conductor
-// Create Conductor & Driver Account's
-
-userRouter.post("/create/admin", AdminAuthentication, async (req, res) => {
-    const { name, age, gender, phoneno, password, type } = req.body
-    const userExists = await UserModel.find({ phoneno })
-    if (userExists.length >= 1) {
-        return res.json({ status: "error", message: "Account Already Created With This Phone Number" })
-    } else {
-        try {
-            const user = new UserModel({
-                name: name,
-                age: age,
-                phoneno: phoneno,
-                gender: gender,
-                password: hash.sha256(password),
-                accounttype: type,
-                "verified.phone": true
-            })
-            try {
-                await user.save()
-                res.json({ status: "success", message: `Admin User Profile Created Successfully` })
-            } catch (error) {
-                res.json({ status: "error", message: `Failed To Create Admin User Profile ${error.message}` })
-            }
-        } catch (error) {
-            return res.json({ status: "error", message: `Failed To Create Admin User Profile ${error.message} `, })
-        }
-    }
-})
-
-
-userRouter.get("/admin/listall", AdminAuthentication, async (req, res) => {
-    try {
-        const user = await UserModel.find({
-            accounttype: { $in: ["conductor", "driver"] }
-        })
-        res.json({ status: "success", data: user })
-    } catch (error) {
-        res.json({ status: "error", message: "Failed To Get User List" })
-    }
-})
-
-
-userRouter.patch("/admin/update/:id", AdminAuthentication, async (req, res) => {
-    const { id } = req.params
-    const updateData = req.body
-    try {
-        const updatedUser = await UserModel.findByIdAndUpdate({ _id: id }, updateData)
-        return res.json({ status: "success", message: "User Details Updated" })
-    } catch (error) {
-        res.json({ status: "error", message: `Failed To Update User Detail's  ${error.message}` })
-    }
-})
-
-
-
-
-userRouter.patch("/admin/disable/:id", AdminAuthentication, async (req, res) => {
-    const { id } = req.params
-    try {
-        const user = await UserModel.findById({ _id: id })
-        user.disabled = !user.disabled
-        await user.save()
-        res.json({ status: "success", message: "Admin User Status Successfully Updated !!" })
-    } catch (error) {
-        console.log("error ", error.message);
-        res.json({ status: "error", message: "Failed To Update Admin User Status" })
     }
 })
 
