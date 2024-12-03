@@ -48,10 +48,15 @@ userRouter.post("/login", async (req, res) => {
         } else {
             if (hash.sha256(password) === userExists[0].password) {
                 if (userExists[0].accounttype !== "admin") {
-                    let token = jwt.sign({
-                        _id: userExists[0]._id, name: userExists[0].name, email: userExists[0].email, accountType: userExists[0].accountType, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
-                    }, "Authentication")
-                    res.json({ status: "success", message: "Login Successful", token: token })
+                    if (userExists[0].verified === true) {
+                        let token = jwt.sign({
+                            _id: userExists[0]._id, name: userExists[0].name, email: userExists[0].email, accountType: userExists[0].accountType, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
+                        }, "Authentication")
+                        res.json({ status: "success", message: "Login Successful", token: token })
+
+                    } else {
+                        res.json({ status: "success", message: "Your Account is under review Wait Till we verifiy it !! ", redirect: "/underreview" })
+                    }
                 } else {
                     res.json({ status: "error", message: "You Can Not Use Admin Credentials To Login !!" })
                 }

@@ -33,16 +33,6 @@ const userschema = mongoose.Schema({
   forgotpasswordtoken: {
     type: String
   },
-  verified: {
-    email: {
-      type: Boolean,
-      default: false
-    },
-    phone: {
-      type: Boolean,
-      default: false
-    }
-  },
   picture: {
     type: String
   },

@@ -49,3 +49,17 @@ For Error
   "message": "User Already Exists with this Email ID. Please Try again with another Email ID",
   "redirect": "/user/login"
 }
+
+
+# Different Example Of Job Type :-
+
+Full-Time Employment
+Part-Time Employment
+Contract Employment
+Freelance/Independent Contractor
+Internship
+Temporary/Seasonal Employment
+Commission-Based Employment
+Remote Employment
+Gig Work
+On-Call/Per Diem Employment
