@@ -6,7 +6,7 @@ const crypt = require("crypto");
 const multer = require("multer");
 const uploadPath = path.join(__dirname, "../public/documents");
 const express = require("express");
-const { ProfessionalAuthentication } = require('../middleware/Authentication');
+const { ProfessionalAuthentication, UserAuthentication } = require('../middleware/Authentication');
 const { JobModel } = require('../model/job.model');
 const { AdminAuthentication } = require('../middleware/Authorization');
 const jobRouter = express.Router()
@@ -35,7 +35,7 @@ jobRouter.post("/add", ProfessionalAuthentication, async (req, res) => {
     })
     try {
         await newJobPosting.save();
-        res.json({ status: "status", message: `Job Creation Successful. Please Wait Till Admin Verify This Job !!` })
+        res.json({ status: "success", message: `Job Creation Successful. Please Wait Till Admin Verify This Job !!` })
 
     } catch (error) {
         res.json({ status: "error", message: `Failed To Create New Job Posting ${error.message}` })
@@ -50,7 +50,7 @@ jobRouter.patch("/edit/:id", ProfessionalAuthentication, async (req, res) => {
     const JobDetails = await JobModel.findByIdAndUpdate({ _id: id }, req.body)
     try {
         await JobDetails.save();
-        res.json({ status: "status", message: `Job Details Updated Successfully !!` })
+        res.json({ status: "success", message: `Job Details Updated Successfully !!` })
     } catch (error) {
         res.json({ status: "error", message: `Failed To Update Job Details ${error.message}` })
     }
@@ -66,7 +66,7 @@ jobRouter.patch("/disable/:id", AdminAuthentication, async (req, res) => {
     try {
         JobDetails[0].status = 'Hold'
         await JobDetails[0].save();
-        res.json({ status: "status", message: `Job Post Disabled Successfully !!` })
+        res.json({ status: "success", message: `Job Post Disabled Successfully !!` })
     } catch (error) {
         res.json({ status: "error", message: `Failed To Disable Job Details ${error.message}` })
     }
@@ -76,12 +76,36 @@ jobRouter.patch("/disable/:id", AdminAuthentication, async (req, res) => {
 
 // Get Job Details 
 
+jobRouter.get("/detailone/:id", UserAuthentication, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const JobDetails = await JobModel.find({ _id: id })
+        if (JobDetails.lenght !== 0) {
+            res.json({ status: "success", data: JobDetails })
+        } else {
+            res.json({ status: "error", message: `No Job Post Found with this ID !! ` })
+        }
+    } catch (error) {
+        res.json({ status: "error", message: `Failed To GET Job Details ${error.message}` })
+    }
+})
+
+
 
 // Get All Job List
 
-
-// 
-
+jobRouter.patch("/listall", UserAuthentication, async (req, res) => {
+    try {
+        const JobDetails = await JobModel.find({ _id: id })
+        if (JobDetails.lenght !== 0) {
+            res.json({ status: "success", data: JobDetails })
+        } else {
+            res.json({ status: "error", message: `No Job Post Found !!` })
+        }
+    } catch (error) {
+        res.json({ status: "error", message: `Failed To Get Job List ${error.message}` })
+    }
+})
 
 
 module.exports = { jobRouter }
