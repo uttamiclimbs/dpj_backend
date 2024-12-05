@@ -122,5 +122,20 @@ jobRouter.patch("/listall/professional", UserAuthentication, async (req, res) =>
     }
 })
 
+jobRouter.post("/apply", UserAuthentication, async (req, res) => {
+    const token = req.headers.authorization.split(" ")[1]
+    const decoded = jwt.verify(token, 'Authentication')
+    try {
+        const JobDetails = await JobModel.find({ createdBy: decoded._id })
+        if (JobDetails.lenght !== 0) {
+            res.json({ status: "success", data: JobDetails })
+        } else {
+            res.json({ status: "error", message: `No Job Post Found !!` })
+        }
+    } catch (error) {
+        res.json({ status: "error", message: `Failed To Get Job List ${error.message}` })
+    }
+})
+
 
 module.exports = { jobRouter }
