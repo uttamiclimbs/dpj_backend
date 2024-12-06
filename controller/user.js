@@ -42,13 +42,13 @@ const hash = {
 userRouter.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body
-        const userExists = await UserModel.find({ email })
+        const userExists = await UserModel.find({email })        
         if (userExists.length === 0) {
             return res.json({ status: "error", message: "No User Exists With This Email ID", redirect: "/user/register" })
         } else {
             if (hash.sha256(password) === userExists[0].password) {
                 if (userExists[0].accounttype !== "admin") {
-                    if (userExists[0].verified === true) {
+                    if (userExists[0].verified === false) {
                         let token = jwt.sign({
                             _id: userExists[0]._id, name: userExists[0].name, email: userExists[0].email, accountType: userExists[0].accountType, exp: Math.floor(Date.now() / 1000) + (7 * 60 * 60)
                         }, "Authentication")
