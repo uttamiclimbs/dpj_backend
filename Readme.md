@@ -33,7 +33,10 @@ Payload :- {
   "name":"Uttam Kumar Shaw",
   "email":"uttamkrshaw@iclimbs.com",
   "password":"Uttam@5599"
+  "accountType":"artist"
 }
+ Different Account Types :- ["artist", "professional", "guest", "admin"], // Replace with your allowed values
+
 
 # Response From Server
 For Success
