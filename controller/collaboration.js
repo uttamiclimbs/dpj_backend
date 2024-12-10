@@ -85,7 +85,7 @@ CollabRouter.post("/edit/collaborators/:id", ArtistAuthentication, async (req, r
     const fileName = req.file.filename;
     try {
         const details = await EventModel.find({ eventId: id })
-        res.json({ status: 'status', message: `Event Successfully Updatec` })
+        res.json({ status: 'status', message: `Event Successfully Updated` })
     } catch (error) {
         res.json({ status: 'error', message: `Failed To Add New Event ${error.message}` })
     }
