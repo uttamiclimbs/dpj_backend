@@ -15,7 +15,7 @@ const eventschema = mongoose.Schema({
     },
     banner: {
         type: String,
-        required: true
+        // required: true
     },
     startDateTime: {
         type: String,

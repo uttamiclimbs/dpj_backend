@@ -1,10 +1,12 @@
 const express = require("express");
 const multer = require("multer");
+const path = require("node:path");
 const jwt = require('jsonwebtoken');
 const { EventModel } = require("../model/event.model");
 const { ArtistAuthentication } = require("../middleware/Authentication");
 const { CollabModel } = require("../model/collaboration.model");
 const CollabRouter = express.Router();
+const uploadPath = path.join(__dirname, "../public/collaborations");
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -18,44 +20,22 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-CollabRouter.post("/add", ArtistAuthentication, upload.single("banner"), async (req, res) => {
+CollabRouter.post("/add", upload.single("banner"), ArtistAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, 'Authentication');
     const fileName = req.file.filename;
     const { title, description, address, eventType, category, startDate, endDate, startTime, endTime, collaborators } = req.body
-    let savedDocument;
-
     const startDateTime = new Date(`${startDate}T${startTime}`);
     const endDateTime = new Date(`${endDate}T${endTime}`);
-
     const collaboration = new EventModel({
-        address, title, description, category, banner: fileName, startDateTime: startDateTime, endDateTime: endDateTime, eventType: eventType, type: "Collaboration", createdBy: decoded._id
+        address: address, title: title, banner: fileName, description: description, category: category, startDateTime: startDateTime, endDateTime: endDateTime, eventType: eventType, type: "Collaboration", createdBy: decoded._id
     })
     try {
         savedDocument = await collaboration.save()
+        res.json({ status: "success", message: `Collaboration Created Successfully` })
     } catch (error) {
         res.json({ status: 'error', message: `Failed To Add New Event ${error.message}` })
     }
-    if (collaborators) {
-        let addCollaborators = [];
-
-        for (let index = 0; index < collaborators.length; index++) {
-            addCollaborators.push({
-                userId: collaborators[index].userId,
-                email: collaborators[index].email,
-                name: collaborators[index].name,
-                amount: collaborators[index].amount,
-                eventId: savedDocument._id
-            })
-        }
-
-        try {
-            const result = await CollabModel.insertMany(seatdetails);
-        } catch (error) {
-            res.json({ status: 'error', message: `Failed To Add New Event ${error.message}` })
-        }
-    }
-    res.json({ status: "success", message: `Collaboration Created Successfully` })
 })
 
 CollabRouter.post("/edit/basic/:id", ArtistAuthentication, upload.single("banner"), async (req, res) => {
