@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
 const eventschema = mongoose.Schema({
+    address: String,
     title: {
         type: String,
         required: true
@@ -16,19 +17,11 @@ const eventschema = mongoose.Schema({
         type: String,
         required: true
     },
-    startDate: {
+    startDateTime: {
         type: String,
         required: true
     },
-    endDate: {
-        type: String,
-        required: true
-    },
-    startTime: {
-        type: String,
-        required: true
-    },
-    endTime: {
+    endDateTime: {
         type: String,
         required: true
     },
@@ -36,10 +29,16 @@ const eventschema = mongoose.Schema({
         type: String,
         required: true
     },
-    eventType: {
+    type: {
         type: String,
         required: true,
         enum: ["Event", "Collaboration"]
+
+    },
+    eventType: {
+        type: String,
+        required: true,
+        enum: ["Physical", "Virtual"]
     },
     CreatedAt: { type: Date, default: Date.now } // Save The Time When the following Job was created 
 })

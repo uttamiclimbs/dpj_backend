@@ -71,3 +71,16 @@ For Error
   "message": "User Already Exists with this Email ID. Please Try again with another Email ID",
   "redirect": "/user/login"
 }
+
+
+
+address: "Create your physical Collaboration by providing the details below"
+banner: File {name: 'Rectangle 317.png', lastModified: 1733489274041, lastModifiedDate: Fri Dec 06 2024 18:17:54 GMT+0530 (India Standard Time), webkitRelativePath: '', size: 85798, …}
+category: "Music"
+description: "Create your physical Collaboration by providing the details below\n"
+endDate: "2024-12-13"
+endTime: "00:00"
+eventType: "Physical"
+startDate: "2024-12-12"
+startTime: "00:00"
+title: "event "
