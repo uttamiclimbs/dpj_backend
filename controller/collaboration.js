@@ -1,5 +1,6 @@
 const express = require("express");
 const multer = require("multer");
+const jwt = require('jsonwebtoken');
 const { EventModel } = require("../model/event.model");
 const { ArtistAuthentication } = require("../middleware/Authentication");
 const { CollabModel } = require("../model/collaboration.model");
