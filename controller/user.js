@@ -104,7 +104,7 @@ userRouter.post("/login", async (req, res) => {
               name: userExists[0].name,
               email: userExists[0].email,
               accountType: userExists[0].accountType,
-              exp: Math.floor(Date.now() / 1000) + 7 * 60 * 60,
+              exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
             },
             "Authentication"
           );
@@ -451,47 +451,43 @@ userRouter.patch("/me/update", UserAuthentication, async (req, res) => {
 
 // Step 1 Uploading Documents For Account Verifications :-
 
-userRouter.post(
-  "/documentupload",
-  upload.single("document"),
-  UserAuthentication,
-  async (req, res) => {
-    const token = req.headers.authorization.split(" ")[1];
-    const { accountType, documentType } = req.body;
-    const fileName = req.file.filename;
+userRouter.post("/documentupload", upload.single("document"), UserAuthentication, async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const { accountType, documentType } = req.body;
+  const fileName = req.file.filename;
 
-    const decoded = jwt.verify(token, "Authentication");
-    const user = await UserModel.find({ _id: decoded._id });
-    try {
-      user[0].accountType = accountType;
-      await user[0].save();
-    } catch (error) {
-      res.json({
-        status: "error",
-        message: `Error Found while trying to upload Documents ${error.message}`,
-      });
-    }
-
-    const documentDetails = new DocumentModel({
-      documentType: documentType,
-      document: fileName,
-      userId: decoded._id,
+  const decoded = jwt.verify(token, "Authentication");
+  const user = await UserModel.find({ _id: decoded._id });
+  try {
+    user[0].accountType = accountType;
+    await user[0].save();
+  } catch (error) {
+    res.json({
+      status: "error",
+      message: `Error Found while trying to upload Documents ${error.message}`,
     });
-
-    try {
-      await documentDetails.save();
-      return res.json({
-        status: "success",
-        message:
-          "Documents Successfully Uploaded Kindly Wait Till we verify the documents.",
-      });
-    } catch (error) {
-      res.json({
-        status: "error",
-        message: `Error Found while trying to upload Documents ${error.message}`,
-      });
-    }
   }
+
+  const documentDetails = new DocumentModel({
+    documentType: documentType,
+    document: fileName,
+    userId: decoded._id,
+  });
+
+  try {
+    await documentDetails.save();
+    return res.json({
+      status: "success",
+      message:
+        "Documents Successfully Uploaded Kindly Wait Till we verify the documents.",
+    });
+  } catch (error) {
+    res.json({
+      status: "error",
+      message: `Error Found while trying to upload Documents ${error.message}`,
+    });
+  }
+}
 );
 
 // Get List of All The Artists From Server 
