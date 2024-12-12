@@ -163,4 +163,41 @@ CollabRouter.post(
   }
 );
 
+
+CollabRouter.get("/list", ArtistAuthentication, async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decoded = jwt.verify(token, "Authentication");
+
+  try {
+    const list = await EventModel.find({ createdBy: decoded._id, type: "Collaboration" })
+    if (list.length == 0) {
+      res.json({ status: "error", message: "No Collaboration Event Found" })
+    } else {
+      res.json({ status: "success", data: list })
+
+    }
+
+  } catch (error) {
+    res.json({ status: "error", message: `Unable To Find Collaboration Events ${error.message}` })
+  }
+});
+
+
+CollabRouter.get("/list/collab/artists/:id", ArtistAuthentication, async (req, res) => {
+  const { id } = req.params
+  const token = req.headers.authorization.split(" ")[1];
+  const decoded = jwt.verify(token, "Authentication");
+
+  try {
+    const list = await CollabModel.find({ eventId: id, userId: decoded._id })
+    if (list.length == 0) {
+      res.json({ status: "error", message: "No Collaborators Added In This Event " })
+    } else {
+      res.json({ status: "success", data: list })
+
+    }
+  } catch (error) {
+    res.json({ status: "error", message: `Unable To Find Collaborators List In This Events ${error.message}` })
+  }
+});
 module.exports = { CollabRouter };
