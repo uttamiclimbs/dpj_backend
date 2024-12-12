@@ -66,3 +66,60 @@ Commission-Based Employment
 Remote Employment
 Gig Work
 On-Call/Per Diem Employment
+
+
+
+
+
+
+
+# Seach Artists Url :- 
+
+GET REQUEST url :- http://localhost:4500/api/v1/user/find/artist?search=mymi
+
+
+
+# Response From Server
+For Success
+{
+    "status": "success",
+    "data": [
+        {
+            "_id": "67582fced8cde15f072f03c0",
+            "name": "Vivek Kumar",
+            "email": "mymix201@gmail.com",
+            "password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+            "verified": false,
+            "disabled": false,
+            "CreatedAt": "2024-12-10T12:10:54.159Z",
+            "__v": 0
+        },
+        {
+            "_id": "675830d2d8cde15f072f03c4",
+            "name": "Vivek Kumar",
+            "email": "mymix211@gmail.com",
+            "password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+            "verified": false,
+            "disabled": false,
+            "CreatedAt": "2024-12-10T12:15:14.089Z",
+            "__v": 0
+        },
+        {
+            "_id": "67583127d8cde15f072f03c8",
+            "name": "Vivek Kumar",
+            "email": "mymix20@gmail.com",
+            "password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+            "verified": false,
+            "disabled": false,
+            "CreatedAt": "2024-12-10T12:16:39.303Z",
+            "__v": 0,
+            "accountType": "artist"
+        }
+    ]
+}
+
+For Error
+{
+    "status": "error",
+    "message": "No matching records found"
+}
