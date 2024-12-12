@@ -45,7 +45,6 @@
  *         description: Unauthorized, invalid credentials.
  */
 
-
 require("dotenv").config();
 const ejs = require("ejs");
 const jwt = require("jsonwebtoken");
@@ -494,6 +493,29 @@ userRouter.post(
     }
   }
 );
+
+// Get List of All The Artists From Server 
+
+userRouter.get("/find/artist", upload.single("document"), UserAuthentication, async (req, res) => {
+  const { search } = req.query;
+
+  const regex = new RegExp(search, 'i');
+  try {
+    const results = await UserModel.find({
+      $or: [
+        { email: { $regex: regex } },
+        { category: { $regex: regex } },
+      ],
+    });
+
+    if (results.length === 0) {
+      return res.json({ status: 'error', message: 'No matching records found' });
+    }
+    return res.json({ status: 'success', data: results });
+  } catch (error) {
+    return res.json({ status: 'error', message: `Èrror Found While Searching For Artist ${error.message}` });
+  }
+})
 
 // Register With Google
 
