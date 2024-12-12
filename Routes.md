@@ -64,22 +64,26 @@ For Error
 "message": "Failed To Add New Event ${error.message}",
 }
 
-# Editing Collaboration Between Artists
 
-url :- http://localhost:4500/api/v1/collaborator/edit/basic/:id
+# Creating Artists As Collaboration
 
-const { id } = req.params;
+url :- http://localhost:4500/api/v1/collaborator/add/collaborator/:id
 
-Payload :- {
-"title":"Testing",
-"description":"Testing",
-"category":"Category Testing",
-"banner":File Uploding,
-"startDate":"2024-12-06",
-"endDate":"2024-12-12",
-"startTime":"05:00",
-"endTime":"11:00",
-"banner":fileupload
+Payload :-{
+"collaborators":[
+{
+id:Candidate Id,
+name:"Testing",
+email:"testing@gmail.com",
+amount:2500
+},
+{
+id:Candidate Id,
+name:"Testing",
+email:"testing@gmail.com",
+amount:2500
+}
+]
 }
 
 # Response From Server
@@ -87,24 +91,77 @@ Payload :- {
 For Success
 {
 "status": "success",
-"message": "Registration Successful",
-"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NzI4N2U0ZTY3MjA3NDBjNThiZDkyYjMiLCJuYW1lIjoiVXR0YW0gS3VtYXIgU2hhdyIsImVtYWlsIjoidXR0YW1rcnNoYXdAaWNsaW1icy5jb20iLCJleHAiOjE3MzA3MzIyMjIsImlhdCI6MTczMDcwNzAyMn0.KPytgnSBjErwinogDAgrll34QcD5Tx2uOrPP3dMT5DU"
+"message": "Successfully Added Collaborators in The Following Collaboration Event",
 }
 
 For Error
 {
 "status": "error",
-"message": "User Already Exists with this Email ID. Please Try again with another Email ID",
-"redirect": "/user/login"
+"message": "Failed To Add New Event ${error.message}",
 }
 
-address: "Create your physical Collaboration by providing the details below"
-banner: File {name: 'Rectangle 317.png', lastModified: 1733489274041, lastModifiedDate: Fri Dec 06 2024 18:17:54 GMT+0530 (India Standard Time), webkitRelativePath: '', size: 85798, …}
-category: "Music"
-description: "Create your physical Collaboration by providing the details below\n"
-endDate: "2024-12-13"
-endTime: "00:00"
-eventType: "Physical"
-startDate: "2024-12-12"
-startTime: "00:00"
-title: "event "
+
+
+# Get List Of All The Collaboration Event Created By The Artist
+
+GET url :- http://localhost:4500/api/v1/collaborator/list
+           Need Token In Headers 
+
+# Response From Server
+
+For Success
+{
+    "status": "success",
+    "data": [
+        {
+            "_id": "675985018656c3942a842276",
+            "address": "Testing",
+            "title": "Testing New Collabboration",
+            "description": "Testing",
+            "category": "Karaoke",
+            "banner": "1733920001688Screenshot 2024-12-03 at 1.07.21 AM.png",
+            "startDateTime": "Wed Dec 11 2024 04:00:00 GMT+0530 (India Standard Time)",
+            "endDateTime": "Tue Dec 17 2024 14:00:00 GMT+0530 (India Standard Time)",
+            "createdBy": "6752a004efaca432a3075c9c",
+            "type": "Collaboration",
+            "eventType": "Virtual",
+            "CreatedAt": "2024-12-11T12:26:41.699Z",
+            "__v": 0
+        }
+    ]
+}
+
+For Error
+{ status: "error",
+message: `Unable To Find Collaboration Events ${error.message}` }
+
+
+
+
+# Get List Of All The Collaborators Added In A Particular Event
+
+GET url :- http://localhost:4500/api/v1/collaborator/list/artists/:id
+           Need Token In Headers 
+
+# Response From Server
+
+For Success
+{
+    "status": "success",
+    "data": [
+        {
+            "_id": "675a78f4713a7083951cb727",
+            "userId": "6752a004efaca432a3075c9c",
+            "email": "uttamkr5599@gmail.com",
+            "name": "Uttam Kumar Shaw",
+            "amount": 4500,
+            "status": "Pending",
+            "eventId": "675985018656c3942a842276",
+            "CreatedAt": "2024-12-12T05:47:32.059Z",
+            "__v": 0
+        }
+    ]
+}
+
+For Error
+{ status: "error", message: `Unable To Find Collaborators List In This Events ${error.message}` }

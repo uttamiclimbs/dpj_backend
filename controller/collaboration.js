@@ -183,7 +183,7 @@ CollabRouter.get("/list", ArtistAuthentication, async (req, res) => {
 });
 
 
-CollabRouter.get("/list/collab/artists/:id", ArtistAuthentication, async (req, res) => {
+CollabRouter.get("/list/artists/:id", ArtistAuthentication, async (req, res) => {
   const { id } = req.params
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
