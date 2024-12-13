@@ -165,3 +165,62 @@ For Success
 
 For Error
 { status: "error", message: `Unable To Find Collaborators List In This Events ${error.message}` }
+
+
+
+
+
+# Update Event Details 
+
+POST url :- http://localhost:4500/api/v1/collaborator/edit/basic/:id
+           Need Token In Headers 
+
+Payload :{
+  address:Testing For Edit Function
+title:Testing For Edit Function
+description:Testing For Edit Function
+category:Karaoke
+startDate:2024-12-11
+endDate:2024-12-17
+startTime:04:00
+endTime:14:00,
+banner:file
+}
+
+# Response From Server
+
+For Success
+{
+    "status": "success",
+    "message": "Event Successfully Updatec"
+}
+
+For Error
+{
+    "status": "error",
+    "message": "Event Successfully Updatec"
+}
+
+
+
+
+
+# Update Collaborator Event Status 
+
+POST url :- http://localhost:4500/api/v1/collaborator/update/collab/status/:id
+           Need Token In Headers 
+
+Payload :{
+    "status":"Status"
+}
+
+# Response From Server
+
+For Success
+      { status: "success", message: "Updated Collaborator Status" }
+
+
+For Error
+    { status: "error", message: `Unable To Update Collaborators Status In This Events ${error.message}` }
+
+

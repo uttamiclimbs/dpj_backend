@@ -25,17 +25,7 @@ CollabRouter.post("/add", upload.single("banner"), ArtistAuthentication, async (
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   const fileName = req.file.filename;
-  const {
-    title,
-    description,
-    address,
-    eventType,
-    category,
-    startDate,
-    endDate,
-    startTime,
-    endTime,
-  } = req.body;
+  const { title, description, address, eventType, category, startDate, endDate, startTime, endTime, } = req.body;
   const startDateTime = new Date(`${startDate}T${startTime}`);
   const endDateTime = new Date(`${endDate}T${endTime}`);
   const collaboration = new EventModel({
@@ -118,7 +108,7 @@ CollabRouter.post("/edit/basic/:id", ArtistAuthentication, upload.single("banner
     details[0].category = category;
     details[0].address = address;
     await details[0].save();
-    res.json({ status: "status", message: `Event Successfully Updatec` });
+    res.json({ status: "success", message: `Event Successfully Updatec` });
   } catch (error) {
     res.json({
       status: "error",
@@ -136,7 +126,7 @@ CollabRouter.post("/edit/collaborators/:id", ArtistAuthentication, async (req, r
   const fileName = req.file.filename;
   try {
     const details = await EventModel.find({ eventId: id });
-    res.json({ status: "status", message: `Event Successfully Updated` });
+    res.json({ status: "success", message: `Event Successfully Updated` });
   } catch (error) {
     res.json({
       status: "error",
@@ -157,9 +147,7 @@ CollabRouter.get("/list", ArtistAuthentication, async (req, res) => {
       res.json({ status: "error", message: "No Collaboration Event Found" })
     } else {
       res.json({ status: "success", data: list })
-
     }
-
   } catch (error) {
     res.json({ status: "error", message: `Unable To Find Collaboration Events ${error.message}` })
   }
@@ -170,17 +158,37 @@ CollabRouter.get("/list/artists/:id", ArtistAuthentication, async (req, res) => 
   const { id } = req.params
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
-
   try {
     const list = await CollabModel.find({ eventId: id, userId: decoded._id })
     if (list.length == 0) {
       res.json({ status: "error", message: "No Collaborators Added In This Event " })
     } else {
       res.json({ status: "success", data: list })
-
     }
   } catch (error) {
     res.json({ status: "error", message: `Unable To Find Collaborators List In This Events ${error.message}` })
   }
 });
+
+
+CollabRouter.post("/update/collab/status/:id", ArtistAuthentication, async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const token = req.headers.authorization.split(" ")[1];
+  const decoded = jwt.verify(token, "Authentication");
+  try {
+    const list = await CollabModel.find({ _id: id, userId: decoded._id })
+    if (list.length == 0) {
+      res.json({ status: "error", message: "No Collaborators Added In This Event " })
+    } else {
+      list[0].status = status
+      await list[0].save()
+      res.json({ status: "success", message: "Updated Collaborator Status" })
+    }
+  } catch (error) {
+    res.json({ status: "error", message: `Unable To Update Collaborators Status In This Events ${error.message}` })
+  }
+});
+
+
 module.exports = { CollabRouter };
