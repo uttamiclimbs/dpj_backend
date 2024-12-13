@@ -154,6 +154,22 @@ CollabRouter.get("/list", ArtistAuthentication, async (req, res) => {
 });
 
 
+CollabRouter.get("/request/list", ArtistAuthentication, async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decoded = jwt.verify(token, "Authentication");
+  try {
+    const list = await CollabModel.find({ userId: decoded._id})
+    if (list.length == 0) {
+      res.json({ status: "error", message: "No Collaboration Request Found" })
+    } else {
+      res.json({ status: "success", data: list })
+    }
+  } catch (error) {
+    res.json({ status: "error", message: `Unable To Find Collaboration Events Requests ${error.message}` })
+  }
+});
+
+
 CollabRouter.get("/list/artists/:id", ArtistAuthentication, async (req, res) => {
   const { id } = req.params
   const token = req.headers.authorization.split(" ")[1];

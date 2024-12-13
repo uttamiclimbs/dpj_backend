@@ -224,3 +224,33 @@ For Error
     { status: "error", message: `Unable To Update Collaborators Status In This Events ${error.message}` }
 
 
+
+
+# Get Collaborations Request List
+
+url :- http://localhost:4500/api/v1/collaborator/request/list
+           Need Token In Headers 
+
+# Response From Server
+
+For Success
+{
+    "status": "success",
+    "data": [
+        {
+            "_id": "675a78f4713a7083951cb727",
+            "userId": "6752a004efaca432a3075c9c",
+            "email": "uttamkr5599@gmail.com",
+            "name": "Uttam Kumar Shaw",
+            "amount": 4500,
+            "eventId": "675985018656c3942a842276",
+            "CreatedAt": "2024-12-12T05:47:32.059Z",
+            "__v": 0,
+            "status": "Pending"
+        }
+    ]
+}
+
+For Error
+    res.json({ status: "error", message: `Unable To Find Collaboration Events Requests ${error.message}` })
+
