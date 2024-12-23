@@ -112,12 +112,13 @@ userRouter.post("/login", async (req, res) => {
             status: "success",
             message: "Login Successful",
             token: token,
+            type: userExists[0].accountType,
           });
         } else {
           res.json({
             status: "success",
-            message: "Your Account is under review Wait Till we verifiy it !! ",
-            redirect: "/underreview",
+            message: "You Cannot Login Using Admin Credential's !! ",
+            redirect: "/",
           });
         }
       } else if (hash.sha256(password) !== userExists[0].password) {
