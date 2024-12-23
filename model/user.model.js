@@ -1,4 +1,20 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
+
+const addressSchema = new Schema({
+  country: {
+    type: String,
+    required: true,
+  },
+  state: {
+    type: String,
+    required: true,
+  }, city: {
+    type: String
+  },
+
+})
+
 const userschema = mongoose.Schema({
   name: {
     type: String,
@@ -10,12 +26,19 @@ const userschema = mongoose.Schema({
   gender: {
     type: String
   },
-  address: {
+  banner: {
     type: String
   },
+  profile: {
+    type: String
+  },
+  address: addressSchema,
   email: {
     type: String,
     required: true
+  },
+  dob: {
+    type: String
   },
   phoneno: {
     type: Number,
@@ -40,14 +63,14 @@ const userschema = mongoose.Schema({
     type: String,
     enum: ["artist", "professional", "guest", "admin"], // Replace with your allowed values
   },
-  documentType:{
-    type:String
+  documentType: {
+    type: String
   },
-  document:{
-    type:String,
+  document: {
+    type: String,
   },
-  verified:{
-    type:Boolean,
+  verified: {
+    type: Boolean,
     default: false
   },
   disabled: {

@@ -38,8 +38,8 @@ const jobschema = mongoose.Schema({
     status: { // Save Current Status of The Job whether the job is currently active or in hold or has expired
         type: String,
         required: true,
-        enum: ['Active', 'Hold', 'Expired','Pending'],
-        default:'Pending'
+        enum: ['Active', 'Hold', 'Expired', 'Pending'],
+        default: 'Pending'
     },
     CreatedAt: { type: Date, default: Date.now }, // Save The Time When the following Job was created 
 

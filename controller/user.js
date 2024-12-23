@@ -108,6 +108,17 @@ userRouter.post("/login", async (req, res) => {
             },
             "Authentication"
           );
+
+          if (userExists[0].disabled === "true") {
+            res.json({
+              status: "error",
+              message: "Your Account has been Temporarily disabled",
+            });
+            
+          } else {
+            
+          }
+          
           res.json({
             status: "success",
             message: "Login Successful",
