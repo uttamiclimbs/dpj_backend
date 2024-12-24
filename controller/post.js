@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const { ArtistAuthentication } = require("../middleware/Authentication");
 const { PostModel } = require("../model/post.model");
 const { CommentModel } = require("../model/comment.model");
+const { AdminAuthentication } = require("../middleware/Authorization");
 const PostRouter = express.Router();
 const uploadPath = path.join(__dirname, "../public/post");
 
@@ -21,6 +22,9 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+// Api's For Post 
+
+// Api To Add New Post
 PostRouter.post("/add", upload.single("media"), ArtistAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, "Authentication");
@@ -46,6 +50,7 @@ PostRouter.post("/add", upload.single("media"), ArtistAuthentication, async (req
 }
 );
 
+// Api To Get All Post List Created By User
 PostRouter.get("/listall", ArtistAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, "Authentication");
@@ -70,6 +75,8 @@ PostRouter.get("/listall", ArtistAuthentication, async (req, res) => {
     }
 }
 );
+
+// Api To Get All Detail Of A Particular Post Created By User
 
 PostRouter.get("/details/:id", async (req, res) => {
     const { id } = req.params;
@@ -100,6 +107,7 @@ PostRouter.get("/details/:id", async (req, res) => {
 }
 );
 
+// Api To Edit Detail's Of A Particular Post Created By User
 
 PostRouter.post("/edit/:id", upload.single("media"), async (req, res) => {
     const { id } = req.params;
@@ -134,6 +142,120 @@ PostRouter.post("/edit/:id", upload.single("media"), async (req, res) => {
     }
 }
 );
+
+// Api To Get All Post List Created By All The USER
+
+PostRouter.get("/listall/admin", AdminAuthentication, async (req, res) => {
+    try {
+        const result = await PostModel.find({}).sort({ createdAt: -1 });
+        if (result.length == 0) {
+            res.json({
+                status: "error",
+                message: "No Post Created By User",
+            });
+        } else {
+            res.json({
+                status: "success",
+                data: result,
+            });
+        }
+    } catch (error) {
+        res.json({
+            status: "error",
+            message: `Failed To Get Post Detail's ${error.message}`,
+        });
+    }
+}
+);
+
+
+// Api's For Comment 
+
+// Api To Add New Comment In a Particular Post
+
+PostRouter.post("/add/comment/:id",ArtistAuthentication, async (req, res) => {
+    const { id } = req.params;
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, "Authentication");
+    const { description } = req.body;
+    const comment = new CommentModel({
+        commentedBy: decoded._id,
+        description: description,
+        postId: id,
+    });
+    try {
+        await comment.save();
+        res.json({
+            status: "success",
+            message: `Added Comment Successfully`,
+        });
+    } catch (error) {
+        res.json({
+            status: "error",
+            message: `Failed To Add New Comment ${error.message}`,
+        });
+    }
+}
+);
+
+// Api To Edit A particular Comment
+
+PostRouter.post("/edit/comment/:id", async (req, res) => {
+    const { id } = req.params;
+    const { description } = req.body;
+    const comment = CommentModel.find({ _id: id });
+    if (comment.length == 0) {
+        res.json({
+            status: "error",
+            message: "No Comment Found",
+        });
+    } else {
+        comment[0].description = description;
+        await comment[0].save();
+        res.json({
+            status: "success",
+            message: `Comment Updated Successfully`,
+        });
+    }
+}
+);
+
+// Api To Get List Of All Comment in An Post
+
+PostRouter.get("/list/comments/;id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const comment = await CommentModel.find({ postId: id })
+        if (comment.length == 0) {
+            res.json({
+                status: "error",
+                message: "No Comment Found",
+            });
+        } else {
+            res.json({
+                status: "success",
+                data: comment,
+            });
+        }
+    } catch (error) {
+        res.json({
+            status: "error",
+            message: `Failed To Add New Comment ${error.message}`,
+        });
+    }
+}
+);
+
+
+
+// Api's For Bookmark
+
+
+
+// Api's For Like
+
+
+
 
 
 
