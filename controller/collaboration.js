@@ -163,7 +163,7 @@ CollabRouter.get("/request/list", ArtistAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   try {
-    const list = await CollabModel.find({ userId: decoded._id, status: "Pending" })
+    const list = await CollabModel.find({ userId: decoded._id})
     if (list.length == 0) {
       res.json({ status: "error", message: "No Collaboration Request Found" })
     } else {
