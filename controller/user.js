@@ -560,24 +560,29 @@ userRouter.post("/basicdetails/update", upload.fields([
   { name: 'banner', maxCount: 1 }  // Single banner image
 ]), UserAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
-  const { gender, address, dob, category, } = req.body;
+  const { gender, country, state, city, dob, category, } = req.body;
   const profile = req.files['profile'][0];
   const banner = req.files['banner'][0];
   console.log("profile ", profile);
   console.log("banner ", banner);
   console.log("body ", req.body);
   const decoded = jwt.verify(token, "Authentication");
-  const user = await UserModel.find({ _id: decoded._id });
+  const user = await UserModel.findOne({ _id: decoded._id });
   try {
-    user[0].gender = gender;
-    user[0].dob = dob;
-    user[0].category = category;
-    user[0].address.country = address.country;
-    user[0].address.state = address.state;
-    user[0].address.city = address.city;
-    user[0].profile = profile;
-    user[0].banner = banner;
-    await user[0].save();
+    user.gender = gender;
+    user.dob = dob;
+    user.category = category;
+    if (!user.address) {
+      user.address = {}; // Initialize address if it doesn't exist
+    }
+
+    // Safely update address fields
+    user.address.country = country || user.address.country;
+    user.address.state = state || user.address.state;
+    user.address.city = city || user.address.city;
+    user.profile = profile.filename;
+    user.banner = banner.filename;
+    await user.save();
     res.json({
       status: "success",
       message: `Successfully Updated Basic Profile Details`,
