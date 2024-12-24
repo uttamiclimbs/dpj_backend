@@ -96,7 +96,7 @@ userRouter.post("/login", async (req, res) => {
         redirect: "/user/register",
       });
     } else {
-      if (hash.sha256(password) === userExists[0].password) {
+      if (hash.sha256(password) === userExists[0].password && userExists[0].disabled != true) {
         if (userExists[0].accounttype !== "admin") {
           let token = jwt.sign(
             {
@@ -108,17 +108,35 @@ userRouter.post("/login", async (req, res) => {
             },
             "Authentication"
           );
-
-          if (userExists[0].disabled === "true") {
-            res.json({
-              status: "error",
-              message: "Your Account has been Temporarily disabled",
+          if (userExists[0].dob === undefined || userExists[0].dob === "") {
+            return res.json({
+              status: "success",
+              message: "Login Successful",
+              token: token,
+              type: userExists[0].accountType,
+              redirect: "/user/basicprofile",
             });
-            
-          } else {
-            
           }
-          
+          if (userExists[0].profile === undefined || userExists[0].profile === "") {
+            return res.json({
+              status: "success",
+              message: "Login Successful",
+              token: token,
+              type: userExists[0].accountType,
+              redirect: "/user/basicprofile",
+            });
+          }
+
+          if (userExists[0].category === undefined || userExists[0].category === "") {
+            return res.json({
+              status: "success",
+              message: "Login Successful",
+              token: token,
+              type: userExists[0].accountType,
+              redirect: "/user/basicprofile",
+            });
+          }
+
           res.json({
             status: "success",
             message: "Login Successful",
@@ -137,6 +155,11 @@ userRouter.post("/login", async (req, res) => {
           status: "error",
           message: "Wrong Password Please Try Again",
         });
+      } else if (userExists[0].disabled === true) {
+        res.json({
+          status: "error",
+          message: "Your Account has been Temporarily disabled",
+        })
       }
     }
   } catch (error) {

@@ -40,6 +40,9 @@ const userschema = mongoose.Schema({
   dob: {
     type: String
   },
+  category: {
+    type: String
+  },
   phoneno: {
     type: Number,
   },
