@@ -163,7 +163,7 @@ CollabRouter.get("/request/list", ArtistAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   try {
-    const list = await CollabModel.find({ userId: decoded._id})
+    const list = await CollabModel.find({ userId: decoded._id, status: "Pending" })
     if (list.length == 0) {
       res.json({ status: "error", message: "No Collaboration Request Found" })
     } else {
@@ -180,7 +180,7 @@ CollabRouter.get("/list/artists/:id", ArtistAuthentication, async (req, res) => 
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   try {
-    const list = await CollabModel.find({ eventId: id, userId: decoded._id })
+    const list = await CollabModel.find({ eventId: id })
     if (list.length == 0) {
       res.json({ status: "error", message: "No Collaborators Added In This Event " })
     } else {

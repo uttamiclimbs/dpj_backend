@@ -489,12 +489,16 @@ userRouter.patch("/me/update", UserAuthentication, async (req, res) => {
 userRouter.post("/documentupload", upload.single("document"), UserAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const { accountType, documentType } = req.body;
-  const fileName = req.file.filename;
-
+  const profile = req.files['profile'][0];
+  const banner = req.files['banner'][0];
   const decoded = jwt.verify(token, "Authentication");
   const user = await UserModel.find({ _id: decoded._id });
   try {
-    user[0].accountType = accountType;
+    user[0].profile = profile;
+    user[0].banner = banner;
+
+
+
     await user[0].save();
   } catch (error) {
     res.json({
@@ -525,6 +529,7 @@ userRouter.post("/documentupload", upload.single("document"), UserAuthentication
 }
 );
 
+
 // Get List of All The Artists From Server 
 
 userRouter.get("/find/artist", upload.single("document"), UserAuthentication, async (req, res) => {
@@ -547,6 +552,46 @@ userRouter.get("/find/artist", upload.single("document"), UserAuthentication, as
     return res.json({ status: 'error', message: `Èrror Found While Searching For Artist ${error.message}` });
   }
 })
+
+// Add Basic Profile Details 
+
+userRouter.post("/basicdetails/update", upload.fields([
+  { name: 'profile', maxCount: 1 }, // Single profile image
+  { name: 'banner', maxCount: 1 }  // Single banner image
+]), UserAuthentication, async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const { gender, address, dob, category, } = req.body;
+  const profile = req.files['profile'][0];
+  const banner = req.files['banner'][0];
+  console.log("profile ", profile);
+  console.log("banner ", banner);
+  console.log("body ", req.body);
+  const decoded = jwt.verify(token, "Authentication");
+  const user = await UserModel.find({ _id: decoded._id });
+  try {
+    user[0].gender = gender;
+    user[0].dob = dob;
+    user[0].category = category;
+    user[0].address.country = address.country;
+    user[0].address.state = address.state;
+    user[0].address.city = address.city;
+    user[0].profile = profile;
+    user[0].banner = banner;
+    await user[0].save();
+    res.json({
+      status: "success",
+      message: `Successfully Updated Basic Profile Details`,
+    });
+
+  } catch (error) {
+    res.json({
+      status: "error",
+      message: `Error Found while trying to upload Documents ${error.message}`,
+    });
+  }
+}
+);
+
 
 // Register With Google
 
@@ -603,3 +648,49 @@ userRouter.get("/register/google", async (req, res) => {
 });
 
 module.exports = { userRouter };
+
+
+
+
+// userRouter.post("/documentupload", upload.single("document"), UserAuthentication, async (req, res) => {
+//   const token = req.headers.authorization.split(" ")[1];
+//   const { accountType, documentType } = req.body;
+//   const profile = req.files['profile'][0];
+//   const banner = req.files['banner'][0];
+//   const decoded = jwt.verify(token, "Authentication");
+//   const user = await UserModel.find({ _id: decoded._id });
+//   try {
+//     user[0].profile = profile;
+//     user[0].banner = banner;
+
+
+
+//     await user[0].save();
+//   } catch (error) {
+//     res.json({
+//       status: "error",
+//       message: `Error Found while trying to upload Documents ${error.message}`,
+//     });
+//   }
+
+//   const documentDetails = new DocumentModel({
+//     documentType: documentType,
+//     document: fileName,
+//     userId: decoded._id,
+//   });
+
+//   try {
+//     await documentDetails.save();
+//     return res.json({
+//       status: "success",
+//       message:
+//         "Documents Successfully Uploaded Kindly Wait Till we verify the documents.",
+//     });
+//   } catch (error) {
+//     res.json({
+//       status: "error",
+//       message: `Error Found while trying to upload Documents ${error.message}`,
+//     });
+//   }
+// }
+// );

@@ -59,9 +59,6 @@ const userschema = mongoose.Schema({
   forgotpasswordtoken: {
     type: String
   },
-  picture: {
-    type: String
-  },
   accountType: {
     type: String,
     enum: ["artist", "professional", "guest", "admin"], // Replace with your allowed values
