@@ -496,9 +496,6 @@ userRouter.post("/documentupload", upload.single("document"), UserAuthentication
   try {
     user[0].profile = profile;
     user[0].banner = banner;
-
-
-
     await user[0].save();
   } catch (error) {
     res.json({
@@ -563,9 +560,6 @@ userRouter.post("/basicdetails/update", upload.fields([
   const { gender, country, state, city, dob, category, } = req.body;
   const profile = req.files['profile'][0];
   const banner = req.files['banner'][0];
-  console.log("profile ", profile);
-  console.log("banner ", banner);
-  console.log("body ", req.body);
   const decoded = jwt.verify(token, "Authentication");
   const user = await UserModel.findOne({ _id: decoded._id });
   try {
@@ -653,49 +647,3 @@ userRouter.get("/register/google", async (req, res) => {
 });
 
 module.exports = { userRouter };
-
-
-
-
-// userRouter.post("/documentupload", upload.single("document"), UserAuthentication, async (req, res) => {
-//   const token = req.headers.authorization.split(" ")[1];
-//   const { accountType, documentType } = req.body;
-//   const profile = req.files['profile'][0];
-//   const banner = req.files['banner'][0];
-//   const decoded = jwt.verify(token, "Authentication");
-//   const user = await UserModel.find({ _id: decoded._id });
-//   try {
-//     user[0].profile = profile;
-//     user[0].banner = banner;
-
-
-
-//     await user[0].save();
-//   } catch (error) {
-//     res.json({
-//       status: "error",
-//       message: `Error Found while trying to upload Documents ${error.message}`,
-//     });
-//   }
-
-//   const documentDetails = new DocumentModel({
-//     documentType: documentType,
-//     document: fileName,
-//     userId: decoded._id,
-//   });
-
-//   try {
-//     await documentDetails.save();
-//     return res.json({
-//       status: "success",
-//       message:
-//         "Documents Successfully Uploaded Kindly Wait Till we verify the documents.",
-//     });
-//   } catch (error) {
-//     res.json({
-//       status: "error",
-//       message: `Error Found while trying to upload Documents ${error.message}`,
-//     });
-//   }
-// }
-// );
