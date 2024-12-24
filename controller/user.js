@@ -104,7 +104,7 @@ userRouter.post("/login", async (req, res) => {
               name: userExists[0].name,
               email: userExists[0].email,
               accountType: userExists[0].accountType,
-              exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+              exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
             },
             "Authentication"
           );

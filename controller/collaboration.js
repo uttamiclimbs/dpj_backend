@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const { EventModel } = require("../model/event.model");
 const { ArtistAuthentication } = require("../middleware/Authentication");
 const { CollabModel } = require("../model/collaboration.model");
+const { start } = require("node:repl");
 const CollabRouter = express.Router();
 const uploadPath = path.join(__dirname, "../public/collaborations");
 
@@ -39,6 +40,10 @@ CollabRouter.post("/add", upload.single("banner"), ArtistAuthentication, async (
     eventType: eventType,
     type: "Collaboration",
     createdBy: decoded._id,
+    startTime: startTime,
+    startDate: startDate,
+    endTime: endTime,
+    endDate: endDate,
   });
   try {
     savedDocument = await collaboration.save();
