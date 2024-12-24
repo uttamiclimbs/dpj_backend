@@ -12,5 +12,5 @@ const commentschema = mongoose.Schema({
     CreatedAt: { type: Date, default: Date.now }, // Save The Time When the following Job was created 
 
 });
-const LikeModel = mongoose.model("comment", commentschema);
-module.exports = { LikeModel };
+const CommentModel = mongoose.model("comment", commentschema);
+module.exports = { CommentModel };

@@ -5,6 +5,7 @@ const fs = require('fs');
 const jwt = require("jsonwebtoken");
 const { ArtistAuthentication } = require("../middleware/Authentication");
 const { PostModel } = require("../model/post.model");
+const { CommentModel } = require("../model/comment.model");
 const PostRouter = express.Router();
 const uploadPath = path.join(__dirname, "../public/post");
 
@@ -20,7 +21,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-PostRouter.post("/add", upload.single("media"),ArtistAuthentication, async (req, res) => {
+PostRouter.post("/add", upload.single("media"), ArtistAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, "Authentication");
     const fileName = req.file.filename;
@@ -39,7 +40,7 @@ PostRouter.post("/add", upload.single("media"),ArtistAuthentication, async (req,
     } catch (error) {
         res.json({
             status: "error",
-            message: `Failed To Add New Event ${error.message}`,
+            message: `Failed To Add  ${error.message}`,
         });
     }
 }
@@ -53,7 +54,36 @@ PostRouter.get("/listall", ArtistAuthentication, async (req, res) => {
         if (result.length == 0) {
             res.json({
                 status: "error",
-                message:"No Post Created By User",
+                message: "No Post Created By User",
+            });
+        } else {
+            res.json({
+                status: "success",
+                data: result,
+            });
+        }
+    } catch (error) {
+        res.json({
+            status: "error",
+            message: `Failed To Get Post Detail's ${error.message}`,
+        });
+    }
+}
+);
+
+PostRouter.get("/details/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const post = await PostModel.find({ _id: id });
+        const comment = await CommentModel.find({ postId: id });
+        const result = {
+            post: post,
+            comment: comment
+        }
+        if (result.length == 0) {
+            res.json({
+                status: "error",
+                message: "No Post Created By User",
             });
         } else {
             res.json({
@@ -64,133 +94,47 @@ PostRouter.get("/listall", ArtistAuthentication, async (req, res) => {
     } catch (error) {
         res.json({
             status: "error",
-            message: `Failed To Add New Event ${error.message}`,
+            message: `Failed To Get Details Of A Particular Event ${error.message}`,
         });
     }
 }
 );
 
-PostRouter.post("/edit/basic/:id", ArtistAuthentication, upload.single("banner"), async (req, res) => {
+
+PostRouter.post("/edit/:id", upload.single("media"), async (req, res) => {
     const { id } = req.params;
-    const { title, description, address, category, startDate, endDate, startTime, endTime, } = req.body;
-    const startDateTime = new Date(`${startDate}T${startTime}`);
-    const endDateTime = new Date(`${endDate}T${endTime}`);
-    const fileName = req.file.filename;
     try {
-        const details = await EventModel.find({ _id: id });
-        fs.unlink(`${uploadPath}/${details[0].banner}`, (err) => {
-            if (err) {
-                console.error('Error deleting old file:', err);
-            } else {
-                console.log('Old file deleted successfully');
-            }
-        });
-        details[0].title = title;
-        details[0].description = description;
-        details[0].category = category;
-        details[0].startDateTime = startDateTime;
-        details[0].endDateTime = endDateTime;
-        details[0].banner = fileName;
-        details[0].category = category;
-        details[0].address = address;
-        await details[0].save();
-        res.json({ status: "success", message: `Event Successfully Updatec` });
+        const post = await PostModel.find({ _id: id });
+        if (post.length == 0) {
+            res.json({
+                status: "error",
+                message: "No Post Created By User",
+            });
+        } else {
+            fs.unlink(`${uploadPath}/${post[0].media}`, (err) => {
+                if (err) {
+                    console.error('Error deleting old file:', err);
+                } else {
+                    console.log('Old file deleted successfully');
+                }
+            });
+            post[0].description = req.body.description;
+            post[0].media = req.file.filename;
+            await post[0].save();
+            res.json({
+                status: "success",
+                data: "Post Updated Successfully",
+            });
+        }
     } catch (error) {
         res.json({
             status: "error",
-            message: `Failed To Edit Event Details ${error.message}`,
+            message: `Failed To Update Event Details ${error.message}`,
         });
     }
 }
 );
 
-PostRouter.post("/edit/collaborators/:id", ArtistAuthentication, async (req, res) => {
-    const { id } = req.params;
-    const token = req.headers.authorization.split(" ")[1];
-    const { collaborators } = req.body;
-    const decoded = jwt.verify(token, "Authentication");
-    const fileName = req.file.filename;
-    try {
-        const details = await EventModel.find({ eventId: id });
-        res.json({ status: "success", message: `Event Successfully Updated` });
-    } catch (error) {
-        res.json({
-            status: "error",
-            message: `Failed To Add New Event ${error.message}`,
-        });
-    }
-}
-);
-
-
-PostRouter.get("/list", ArtistAuthentication, async (req, res) => {
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.verify(token, "Authentication");
-
-    try {
-        const list = await EventModel.find({ createdBy: decoded._id, type: "Collaboration" })
-        if (list.length == 0) {
-            res.json({ status: "error", message: "No Collaboration Event Found" })
-        } else {
-            res.json({ status: "success", data: list })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Unable To Find Collaboration Events ${error.message}` })
-    }
-});
-
-
-PostRouter.get("/request/list", ArtistAuthentication, async (req, res) => {
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.verify(token, "Authentication");
-    try {
-        const list = await CollabModel.find({ userId: decoded._id, status: "Pending" })
-        if (list.length == 0) {
-            res.json({ status: "error", message: "No Collaboration Request Found" })
-        } else {
-            res.json({ status: "success", data: list })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Unable To Find Collaboration Events Requests ${error.message}` })
-    }
-});
-
-
-PostRouter.get("/list/artists/:id", ArtistAuthentication, async (req, res) => {
-    const { id } = req.params
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.verify(token, "Authentication");
-    try {
-        const list = await CollabModel.find({ eventId: id })
-        if (list.length == 0) {
-            res.json({ status: "error", message: "No Collaborators Added In This Event " })
-        } else {
-            res.json({ status: "success", data: list })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Unable To Find Collaborators List In This Events ${error.message}` })
-    }
-});
-
-
-PostRouter.post("/update/collab/status/:id", ArtistAuthentication, async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-    const token = req.headers.authorization.split(" ")[1];
-    const decoded = jwt.verify(token, "Authentication");
-    try {
-        const list = await CollabModel.find({ _id: id, userId: decoded._id })
-        if (list.length == 0) {
-            res.json({ status: "error", message: "No Collaborators Added In This Event " })
-        } else {
-            list[0].status = status
-            await list[0].save()
-            res.json({ status: "success", message: "Updated Collaborator Status" })
-        }
-    } catch (error) {
-        res.json({ status: "error", message: `Unable To Update Collaborators Status In This Events ${error.message}` })
-    }
-});
 
 
 module.exports = { PostRouter };

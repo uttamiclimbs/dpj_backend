@@ -605,8 +605,6 @@ userRouter.get("/register/google", async (req, res) => {
     const result = await googleresponse.json();
     const { email, name, picture } = result;
     let user = await UserModel.findOne({ email });
-    console.log("USer google login ", user);
-
     if (!user) {
       user = new UserModel({ name, email, picture, verified: { email: true } });
       await user.save();
