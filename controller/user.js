@@ -139,13 +139,13 @@ userRouter.post("/login", async (req, res) => {
 
           res.json({
             status: "success",
-            message: "Login Successful",
+            message: "Login Successfully",
             token: token,
             type: userExists[0].accountType,
           });
         } else {
           res.json({
-            status: "success",
+            status: "error",
             message: "You Cannot Login Using Admin Credential's !! ",
             redirect: "/",
           });

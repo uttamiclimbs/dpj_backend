@@ -28,7 +28,7 @@ const upload = multer({ storage: storage });
 PostRouter.post("/add", upload.single("media"), ArtistAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, "Authentication");
-    const fileName = req.file.filename;
+    const fileName = req.file.filename;    
     const { description, } = req.body;
     const post = new PostModel({
         media: fileName,
@@ -81,7 +81,7 @@ PostRouter.get("/listall", ArtistAuthentication, async (req, res) => {
 PostRouter.get("/details/:id", async (req, res) => {
     const { id } = req.params;
     try {
-        const post = await PostModel.find({ _id: id });
+        const post = await PostModel.findOne({ _id: id });
         const comment = await CommentModel.find({ postId: id });
         const result = {
             post: post,
@@ -177,6 +177,8 @@ PostRouter.post("/add/comment/:id",ArtistAuthentication, async (req, res) => {
     const { id } = req.params;
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, "Authentication");
+    console.log("testing comment",req.body);
+    
     const { description } = req.body;
     const comment = new CommentModel({
         commentedBy: decoded._id,
