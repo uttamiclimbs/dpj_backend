@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const bookmarkschema = mongoose.Schema({
     bookmarkedBy: { // Save Detailed Description of Job & basic detail about the job
-        type: Array,
+        type: String,
         required: true
     },
     postId: { type: String, required: true }, // Save The Post ID for which this Post was Liked

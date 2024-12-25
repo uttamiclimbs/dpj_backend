@@ -7,6 +7,7 @@ const { ArtistAuthentication } = require("../middleware/Authentication");
 const { PostModel } = require("../model/post.model");
 const { CommentModel } = require("../model/comment.model");
 const { AdminAuthentication } = require("../middleware/Authorization");
+const { BookMarkModel } = require("../model/bookmark.model");
 const PostRouter = express.Router();
 const uploadPath = path.join(__dirname, "../public/post");
 
@@ -28,7 +29,7 @@ const upload = multer({ storage: storage });
 PostRouter.post("/add", upload.single("media"), ArtistAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, "Authentication");
-    const fileName = req.file.filename;    
+    const fileName = req.file.filename;
     const { description, } = req.body;
     const post = new PostModel({
         media: fileName,
@@ -173,12 +174,12 @@ PostRouter.get("/listall/admin", AdminAuthentication, async (req, res) => {
 
 // Api To Add New Comment In a Particular Post
 
-PostRouter.post("/add/comment/:id",ArtistAuthentication, async (req, res) => {
+PostRouter.post("/add/comment/:id", ArtistAuthentication, async (req, res) => {
     const { id } = req.params;
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, "Authentication");
-    console.log("testing comment",req.body);
-    
+    console.log("testing comment", req.body);
+
     const { description } = req.body;
     const comment = new CommentModel({
         commentedBy: decoded._id,
@@ -205,15 +206,15 @@ PostRouter.post("/add/comment/:id",ArtistAuthentication, async (req, res) => {
 PostRouter.post("/edit/comment/:id", async (req, res) => {
     const { id } = req.params;
     const { description } = req.body;
-    const comment = CommentModel.find({ _id: id });
+    const comment = await CommentModel.findOne({ _id: id });
     if (comment.length == 0) {
         res.json({
             status: "error",
             message: "No Comment Found",
         });
     } else {
-        comment[0].description = description;
-        await comment[0].save();
+        comment.description = description;
+        await comment.save();
         res.json({
             status: "success",
             message: `Comment Updated Successfully`,
@@ -224,7 +225,7 @@ PostRouter.post("/edit/comment/:id", async (req, res) => {
 
 // Api To Get List Of All Comment in An Post
 
-PostRouter.get("/list/comments/;id", async (req, res) => {
+PostRouter.get("/list/comments/:id", async (req, res) => {
     const { id } = req.params;
     try {
         const comment = await CommentModel.find({ postId: id })
@@ -252,6 +253,89 @@ PostRouter.get("/list/comments/;id", async (req, res) => {
 
 // Api's For Bookmark
 
+// Api To Add OR Remove Bookmark
+
+PostRouter.post("/add/bookmark/:id", async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, "Authentication");
+    try {
+        const bookmark = await BookMarkModel.find({ postId: id })
+        if (bookmark.length == 0) {
+            if (status == true) {
+                const bookmark = new BookMarkModel({
+                    bookmarkedBy: decoded._id,
+                    postId: id,
+                });
+
+                await bookmark.save();
+                res.json({
+                    status: "success",
+                    message: `Added Bookmark Successfully`,
+                })
+            }
+        } else {
+            if (status == false) {
+                const bookmark = await BookMarkModel.deleteOne({
+                    postId: id,
+                });
+                res.json({
+                    status: "success",
+                    message: `Bookmark Successfully Removed`,
+                })
+            }
+        }
+    } catch (error) {
+        res.json({
+            status: "error",
+            message: `Failed To Add New Comment ${error.message}`,
+        });
+    }
+}
+);
+
+
+// Api To Get List Of All Bookmark List Of A Particular User
+
+PostRouter.get("/listall/bookmark", async (req, res) => {
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, "Authentication");
+    try {
+        const bookmark = await BookMarkModel.aggregate(
+            [
+                {
+                    $match:
+                    /**
+                     * query: The query in MQL.
+                     */
+                    {
+                        bookmarkedBy: "6752a004efaca432a3075c9c"
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "posts",
+                        localField: "postId",
+                        foreignField: "_id",
+                        as: "result"
+                    }
+                }
+            ])
+        res.json({
+            status: "success",
+            data: bookmark,
+        });
+
+
+    } catch (error) {
+        res.json({
+            status: "error",
+            message: `Failed To Get List Of All Bookmarks ${error.message}`,
+        });
+    }
+}
+);
 
 
 // Api's For Like
