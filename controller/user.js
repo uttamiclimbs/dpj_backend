@@ -59,7 +59,7 @@ const { UserModel } = require("../model/user.model");
 const { transporter } = require("../service/transporter");
 const { UserAuthentication } = require("../middleware/Authentication");
 const { DocumentModel } = require("../model/document.model");
-const userRouter = express.Router();
+const UserRouter = express.Router();
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadPath);
@@ -86,7 +86,7 @@ const hash = {
 
 // Regular User Login
 
-userRouter.post("/login", async (req, res) => {
+UserRouter.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const userExists = await UserModel.find({ email });
@@ -171,7 +171,7 @@ userRouter.post("/login", async (req, res) => {
   }
 });
 
-userRouter.post("/login/admin", async (req, res) => {
+UserRouter.post("/login/admin", async (req, res) => {
   try {
     const { phoneno, password } = req.body;
     const userExists = await UserModel.find({ phoneno });
@@ -230,7 +230,7 @@ userRouter.post("/login/admin", async (req, res) => {
 
 // User Registration Step 1 Basic Detail's Registration
 
-userRouter.post("/register", async (req, res) => {
+UserRouter.post("/register", async (req, res) => {
   try {
     const { name, email, password, accountType } = req.body;
     const userExists = await UserModel.find({ email });
@@ -272,7 +272,7 @@ userRouter.post("/register", async (req, res) => {
 
 // Forgot Password Step 1 Sending Otp in Email
 
-userRouter.post("/forgot", async (req, res) => {
+UserRouter.post("/forgot", async (req, res) => {
   try {
     const { email } = req.body;
     const userExists = await UserModel.find({ email });
@@ -355,7 +355,7 @@ userRouter.post("/forgot", async (req, res) => {
 
 // Module to Send Otp on Email
 
-userRouter.post("/forgot/phone", async (req, res) => {
+UserRouter.post("/forgot/phone", async (req, res) => {
   try {
     const { phoneno } = req.body;
     const userExists = await UserModel.find({ phoneno });
@@ -439,7 +439,7 @@ userRouter.post("/forgot/phone", async (req, res) => {
 
 // Getting Basic User Detail's Like username, email & more which is passed via token
 
-userRouter.get("/me", UserAuthentication, async (req, res) => {
+UserRouter.get("/me", UserAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   try {
     if (!token) {
@@ -467,7 +467,7 @@ userRouter.get("/me", UserAuthentication, async (req, res) => {
 
 // Updating User Detail's in the Database.
 
-userRouter.patch("/me/update", upload.fields([
+UserRouter.patch("/me/update", upload.fields([
   { name: 'profile', maxCount: 1 }, // Single profile image
   { name: 'banner', maxCount: 1 }  // Single banner image
 ]), UserAuthentication, async (req, res) => {
@@ -544,7 +544,7 @@ userRouter.patch("/me/update", upload.fields([
 
 // Step 1 Uploading Documents For Account Verifications :-
 
-userRouter.post("/documentupload", upload.single("document"), UserAuthentication, async (req, res) => {
+UserRouter.post("/documentupload", upload.single("document"), UserAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const { accountType, documentType } = req.body;
   const profile = req.files['profile'][0];
@@ -587,7 +587,7 @@ userRouter.post("/documentupload", upload.single("document"), UserAuthentication
 
 // Get List of All The Artists From Server 
 
-userRouter.get("/find/artist", UserAuthentication, async (req, res) => {
+UserRouter.get("/find/artist", UserAuthentication, async (req, res) => {
   const { search } = req.query;
   const regex = new RegExp(search, 'i');
   try {
@@ -610,7 +610,7 @@ userRouter.get("/find/artist", UserAuthentication, async (req, res) => {
 
 // Get List of All The Artists From Server User Which needs to be shown in Artist Search Page
 
-userRouter.get("/listall/artist", UserAuthentication, async (req, res) => {
+UserRouter.get("/listall/artist", UserAuthentication, async (req, res) => {
   try {
     const results = await UserModel.find({ accountType: "artist", disabled: "false", verified: "true" }, { password: 0, verified: 0, disabled: 0, CreatedAt: 0 });
 
@@ -625,7 +625,7 @@ userRouter.get("/listall/artist", UserAuthentication, async (req, res) => {
 
 // Add Basic Profile Details 
 
-userRouter.post("/basicdetails/update", upload.fields([
+UserRouter.post("/basicdetails/update", upload.fields([
   { name: 'profile', maxCount: 1 }, // Single profile image
   { name: 'banner', maxCount: 1 }  // Single banner image
 ]), UserAuthentication, async (req, res) => {
@@ -667,7 +667,7 @@ userRouter.post("/basicdetails/update", upload.fields([
 
 // Register With Google
 
-userRouter.get("/register/google", async (req, res) => {
+UserRouter.get("/register/google", async (req, res) => {
   try {
     const { code } = req.query;
     const googleRes = await oauth2client.getToken(code);
@@ -717,4 +717,4 @@ userRouter.get("/register/google", async (req, res) => {
   }
 });
 
-module.exports = { userRouter };
+module.exports = { UserRouter };

@@ -16,9 +16,9 @@
 
 3. **Collaboration API**
     - `GET /api/users`: Create Collab & Edit Collab 
-    - `GET /api/users/{id}`: List All Collab Created By the User & Get List Of A Particular Collab Details (pending)
+    - `GET /api/users/{id}`: List All Collab Created By the User & Get List Of A Particular Collab Details
     - `PUT /api/users/{id}`: Add Collaborator, Get List Of all collaborator added in an event & Get Collaboration Request Status & Send Request to Different Artist For Collab & Change Status of Collab Request By Artist & Shows List Of All Artists
-    - `PUT /api/users/{id}`: Review System For Both Collaboration & Event .
+    - `PUT /api/users/{id}`: Review System For Both Collaboration & Event(Pending)
 
 4. **Event API**
     - `GET /api/issues`: Retrieve a list of issues

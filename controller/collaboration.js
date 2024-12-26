@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const { EventModel } = require("../model/event.model");
 const { ArtistAuthentication } = require("../middleware/Authentication");
 const { CollabModel } = require("../model/collaboration.model");
-const { start } = require("node:repl");
 const CollabRouter = express.Router();
 const uploadPath = path.join(__dirname, "../public/collaborations");
 

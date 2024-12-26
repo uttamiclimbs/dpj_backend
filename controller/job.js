@@ -9,7 +9,7 @@ const express = require("express");
 const { ProfessionalAuthentication, UserAuthentication } = require('../middleware/Authentication');
 const { JobModel } = require('../model/job.model');
 const { AdminAuthentication } = require('../middleware/Authorization');
-const jobRouter = express.Router()
+const JobRouter = express.Router()
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, uploadPath);
@@ -24,7 +24,7 @@ const upload = multer({ storage: storage });
 
 // Creating A Job Post
 
-jobRouter.post("/add", ProfessionalAuthentication, async (req, res) => {
+JobRouter.post("/add", ProfessionalAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1]
     const decoded = jwt.verify(token, 'Authentication')
     const { salary, role, workType, description, position, education, experience, timeDuration, employmentType, expireAt } = req.body;
@@ -45,7 +45,7 @@ jobRouter.post("/add", ProfessionalAuthentication, async (req, res) => {
 
 // Editing Job Post Details
 
-jobRouter.patch("/edit/:id", ProfessionalAuthentication, async (req, res) => {
+JobRouter.patch("/edit/:id", ProfessionalAuthentication, async (req, res) => {
     const { id } = req.params;
     const JobDetails = await JobModel.findByIdAndUpdate({ _id: id }, req.body)
     try {
@@ -60,7 +60,7 @@ jobRouter.patch("/edit/:id", ProfessionalAuthentication, async (req, res) => {
 
 // Disable Job Details
 
-jobRouter.patch("/disable/:id", AdminAuthentication, async (req, res) => {
+JobRouter.patch("/disable/:id", AdminAuthentication, async (req, res) => {
     const { id } = req.params;
     const JobDetails = await JobModel.find({ _id: id })
     try {
@@ -76,7 +76,7 @@ jobRouter.patch("/disable/:id", AdminAuthentication, async (req, res) => {
 
 // Get Job Details 
 
-jobRouter.get("/detailone/:id", UserAuthentication, async (req, res) => {
+JobRouter.get("/detailone/:id", UserAuthentication, async (req, res) => {
     const { id } = req.params;
     try {
         const JobDetails = await JobModel.find({ _id: id })
@@ -94,7 +94,7 @@ jobRouter.get("/detailone/:id", UserAuthentication, async (req, res) => {
 
 // Get All Job List
 
-jobRouter.patch("/listall", UserAuthentication, async (req, res) => {
+JobRouter.patch("/listall", UserAuthentication, async (req, res) => {
     try {
         const JobDetails = await JobModel.find({})
         if (JobDetails.lenght !== 0) {
@@ -107,7 +107,7 @@ jobRouter.patch("/listall", UserAuthentication, async (req, res) => {
     }
 })
 
-jobRouter.patch("/listall/professional", UserAuthentication, async (req, res) => {
+JobRouter.patch("/listall/professional", UserAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1]
     const decoded = jwt.verify(token, 'Authentication')
     try {
@@ -122,7 +122,7 @@ jobRouter.patch("/listall/professional", UserAuthentication, async (req, res) =>
     }
 })
 
-jobRouter.post("/apply", UserAuthentication, async (req, res) => {
+JobRouter.post("/apply", UserAuthentication, async (req, res) => {
     const token = req.headers.authorization.split(" ")[1]
     const decoded = jwt.verify(token, 'Authentication')
     try {
@@ -138,4 +138,4 @@ jobRouter.post("/apply", UserAuthentication, async (req, res) => {
 })
 
 
-module.exports = { jobRouter }
+module.exports = { JobRouter }

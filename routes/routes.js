@@ -1,14 +1,16 @@
 const router = require("express").Router();
 const { CollabRouter } = require("../controller/collaboration");
-const { jobRouter } = require("../controller/job");
+const { EventRouter } = require("../controller/event");
+const { JobRouter } = require("../controller/job");
 const { PostRouter } = require("../controller/post");
-const { userRouter } = require("../controller/user");
+const { UserRouter } = require("../controller/user");
 
 router
-    .use("/user", userRouter)
-    .use("/job", jobRouter)
+    .use("/user", UserRouter)
+    .use("/job", JobRouter)
     .use("/collaborator", CollabRouter)
     .use("/post", PostRouter)
+    .use("event", EventRouter)
 
 
 module.exports = router;
