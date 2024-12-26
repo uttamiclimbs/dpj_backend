@@ -91,7 +91,7 @@ CollabRouter.post("/add/collaborators/:id", ArtistAuthentication, async (req, re
 
 CollabRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banner"), async (req, res) => {
   const { id } = req.params;
-ß  const fileName = req.file?.filename;
+  const fileName = req.file?.filename;
   try {
     const details = await EventModel.find({ _id: id });
     if (!details) {
@@ -132,8 +132,8 @@ CollabRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banne
     const updatedData = {
       ...req.body, // Update other fields if provided
       banner: req.file ? fileName : details[0].banner, // Use the new image if uploaded
-      startDateTime:startDateTime,
-      endDateTime:endDateTime
+      startDateTime: startDateTime,
+      endDateTime: endDateTime
     };
 
     const updatedItem = await EventModel.findByIdAndUpdate(id, updatedData, {
