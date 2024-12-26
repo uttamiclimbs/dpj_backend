@@ -478,9 +478,7 @@ userRouter.patch("/me/update",upload.fields([
   try {
     const updatedUser = await UserModel.findOne({ _id: decoded._id });
 
-
     updatedUser.name = req.body?.name;
-    updatedUser.email = req.body?.email;
     updatedUser.phoneno = req.body?.phoneno;
     updatedUser.dob = req.body?.dob;
     updatedUser.category = req.body?.category;
@@ -499,7 +497,7 @@ userRouter.patch("/me/update",upload.fields([
     }
     updatedUser.sociallinks.facebook = req.body?.facebook || updatedUser.sociallinks.facebook;
     updatedUser.sociallinks.linkdein = req.body?.linkdein || updatedUser.sociallinks.linkdein;
-    updatedUser.sociallinks.tiwtter = req.body?.tiwtter || updatedUser.sociallinks.tiwtter;
+    updatedUser.sociallinks.twitter = req.body?.twitter || updatedUser.sociallinks.twitter;
     updatedUser.sociallinks.instagram = req.body?.instagram || updatedUser.sociallinks.instagram;
 
     updatedUser.profile = profile.filename;

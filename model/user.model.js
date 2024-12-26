@@ -23,7 +23,7 @@ const socialSchema = new Schema({
   linkdein: {
     type: String,
   },
-  tiwtter: {
+  twitter: {
     type: String
   },
   instagram: {
