@@ -89,7 +89,7 @@ CollabRouter.post("/add/collaborators/:id", ArtistAuthentication, async (req, re
 }
 );
 
-CollabRouter.post("/edit/basic/:id", ArtistAuthentication, upload.single("banner"), async (req, res) => {
+CollabRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banner"), async (req, res) => {
   const { id } = req.params;
   const { title, description, address, category, startDate, endDate, startTime, endTime, } = req.body;
   const startDateTime = new Date(`${startDate}T${startTime}`);
@@ -97,23 +97,46 @@ CollabRouter.post("/edit/basic/:id", ArtistAuthentication, upload.single("banner
   const fileName = req.file.filename;
   try {
     const details = await EventModel.find({ _id: id });
-    fs.unlink(`${uploadPath}/${details[0].banner}`, (err) => {
-      if (err) {
-        console.error('Error deleting old file:', err);
-      } else {
-        console.log('Old file deleted successfully');
-      }
+    if (!details) {
+      return res.json({ status: "error", message: 'No Event found' });
+    }
+
+    if (req.file && details[0].banner) {
+      fs.unlink(`${uploadPath}/${details[0].banner}`, (err) => {
+        if (err) {
+          console.error('Error deleting old file:', err);
+        } else {
+          console.log('Old file deleted successfully');
+        }
+      });
+    }
+
+    const updatedData = {
+      ...req.body, // Update other fields if provided
+      image: req.file ? fileName : details[0].banner, // Use the new image if uploaded
+    };
+
+    const updatedItem = await EventModel.findByIdAndUpdate(id, updatedData, {
+      new: true, // Return the updated document
     });
-    details[0].title = title;
-    details[0].description = description;
-    details[0].category = category;
-    details[0].startDateTime = startDateTime;
-    details[0].endDateTime = endDateTime;
-    details[0].banner = fileName;
-    details[0].category = category;
-    details[0].address = address;
-    await details[0].save();
+
+    console.log("updated value ",updatedItem);
+    
+
     res.json({ status: "success", message: `Event Successfully Updatec` });
+
+
+
+    // details[0].title = title;
+    // details[0].description = description;
+    // details[0].category = category;
+    // details[0].startDateTime = startDateTime;
+    // details[0].endDateTime = endDateTime;
+    // details[0].banner = fileName;
+    // details[0].category = category;
+    // details[0].address = address;
+    // await details[0].save();
+    // res.json({ status: "success", message: `Event Successfully Updatec` });
   } catch (error) {
     res.json({
       status: "error",
@@ -162,7 +185,7 @@ CollabRouter.get("/request/list", ArtistAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   try {
-    const list = await CollabModel.find({ userId: decoded._id})
+    const list = await CollabModel.find({ userId: decoded._id })
     if (list.length == 0) {
       res.json({ status: "error", message: "No Collaboration Request Found" })
     } else {
