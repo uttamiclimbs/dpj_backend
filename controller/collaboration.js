@@ -91,10 +91,7 @@ CollabRouter.post("/add/collaborators/:id", ArtistAuthentication, async (req, re
 
 CollabRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banner"), async (req, res) => {
   const { id } = req.params;
-  // const { title, description, address, category, startDate, endDate, startTime, endTime, } = req.body;
-  // const startDateTime = new Date(`${startDate}T${startTime}`);
-  // const endDateTime = new Date(`${endDate}T${endTime}`);
-  const fileName = req.file?.filename;
+ß  const fileName = req.file?.filename;
   try {
     const details = await EventModel.find({ _id: id });
     if (!details) {
@@ -143,23 +140,7 @@ CollabRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banne
       new: true, // Return the updated document
     });
 
-    console.log("updated value ", updatedItem);
-
-
     res.json({ status: "success", message: `Event Successfully Updatec` });
-
-
-
-    // details[0].title = title;
-    // details[0].description = description;
-    // details[0].category = category;
-    // details[0].startDateTime = startDateTime;
-    // details[0].endDateTime = endDateTime;
-    // details[0].banner = fileName;
-    // details[0].category = category;
-    // details[0].address = address;
-    // await details[0].save();
-    // res.json({ status: "success", message: `Event Successfully Updatec` });
   } catch (error) {
     res.json({
       status: "error",
