@@ -145,7 +145,6 @@ CollabRouter.post("/edit/collaborators/:id", ArtistAuthentication, async (req, r
 CollabRouter.get("/list", ArtistAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
-
   try {
     const list = await EventModel.find({ createdBy: decoded._id, type: "Collaboration" })
     if (list.length == 0) {

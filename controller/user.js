@@ -587,9 +587,8 @@ userRouter.post("/documentupload", upload.single("document"), UserAuthentication
 
 // Get List of All The Artists From Server 
 
-userRouter.get("/find/artist", upload.single("document"), UserAuthentication, async (req, res) => {
+userRouter.get("/find/artist", UserAuthentication, async (req, res) => {
   const { search } = req.query;
-
   const regex = new RegExp(search, 'i');
   try {
     const results = await UserModel.find({
@@ -605,6 +604,21 @@ userRouter.get("/find/artist", upload.single("document"), UserAuthentication, as
     return res.json({ status: 'success', data: results });
   } catch (error) {
     return res.json({ status: 'error', message: `Èrror Found While Searching For Artist ${error.message}` });
+  }
+})
+
+// Get List of All The Artists From Server User Which needs to be shown in Artist Search Page
+
+userRouter.get("/listall/artist", UserAuthentication, async (req, res) => {
+  try {
+    const results = await UserModel.find({accountType:"artist",disabled:"false",verified:"true"},{password:0,verified:0,disabled:0,CreatedAt:0});
+
+    if (results.length === 0) {
+      return res.json({ status: 'error', message: 'No Artist found' });
+    }
+    return res.json({ status: 'success', data: results });
+  } catch (error) {
+    return res.json({ status: 'error', message: `Èrror Found While Fetching The List Of AllvArtist ${error.message}` });
   }
 })
 

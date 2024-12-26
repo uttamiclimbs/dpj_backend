@@ -1,15 +1,25 @@
 # API List for DPJ Backend
 
 1. **User Authentication API**
-    - `POST /api/auth/register`: Update User Profile Full
-    - `POST /api/auth/login`: Document Upload & Verification Api
-    - `POST /api/auth/logout`: 
+    - `POST /api/auth/register`: User Login & user Registration
+    - `POST /api/auth/login`: Document Upload & Verification Api (Pending)
+    - `POST /api/auth/logout`: User Basic Profile  & User Profile Update
+    - `POST /api/auth/logout`: Get User Detail's 
 
-2. **Artist API**
-    - `GET /api/users`: Apply For a Job
-    - `GET /api/users/{id}`: Current Status Of Jobs Applied By Artist
-    - `PUT /api/users/{id}`: Get Artist Information
-    - `DELETE /api/users/{id}`: Get Business Informations
+
+2. **Post API**
+    - `GET /api/users`: Create Post & Edit Post
+    - `GET /api/users/{id}`: List All Post Created By User & Get Detail Of A Particular Post 
+    - `PUT /api/users/{id}`: List All Comment On A Signle Post, Add Comment & Edit Comment
+    - `DELETE /api/users/{id}`: Adding & Removing Bookmark On a Post List Of All Bookmarks (Pending), 
+    - `DELETE /api/users/{id}`: Adding & Removing Likes On a Post (Pending), 
+
+2. **Collaboration API**
+    - `GET /api/users`: Create Collab & Edit Collab 
+    - `GET /api/users/{id}`: List All Collab Created By the User & Get List Of A Particular Collab Details (pending)
+    - `PUT /api/users/{id}`: Add Collaborator, Get List Of all collaborator added in an event & Get Collaboration Request Status & Send Request to Different Artist For Collab & Change Status of Collab Request By Artist & Shows List Of All Artists
+    
+
     
 
 3. **Issue Management API**
