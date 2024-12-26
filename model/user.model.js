@@ -7,22 +7,45 @@ const addressSchema = new Schema({
   },
   state: {
     type: String,
-  }, city: {
+  },
+  city: {
     type: String
   },
-
+  address: {
+    type: String
+  }
 })
 
+const socialSchema = new Schema({
+  facebook: {
+    type: String,
+  },
+  linkdein: {
+    type: String,
+  },
+  tiwtter: {
+    type: String
+  },
+  instagram: {
+    type: String
+  }
+})
+
+
 const userschema = mongoose.Schema({
+  // Enable & Disable Account
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  disabled: {
+    type: Boolean,
+    default: false
+  },
+  // Basic Details Common for all Account Types
   name: {
     type: String,
     required: true,
-  },
-  age: {
-    type: String
-  },
-  gender: {
-    type: String
   },
   banner: {
     type: String
@@ -31,15 +54,10 @@ const userschema = mongoose.Schema({
     type: String
   },
   address: addressSchema,
+  sociallinks: socialSchema,
   email: {
     type: String,
     required: true
-  },
-  dob: {
-    type: String
-  },
-  category: {
-    type: String
   },
   phoneno: {
     type: Number,
@@ -61,19 +79,29 @@ const userschema = mongoose.Schema({
     type: String,
     enum: ["artist", "professional", "guest", "admin"], // Replace with your allowed values
   },
+  dob: {
+    type: String
+  },
+  category: {
+    type: String
+  },
   documentType: {
     type: String
   },
   document: {
     type: String,
   },
-  verified: {
-    type: Boolean,
-    default: false
+
+  // Artist Specific Details
+  gender: {
+    type: String
   },
-  disabled: {
-    type: Boolean,
-    default: false
+  skills: {
+    type: [String]
+  },
+  // Professional Specific Details
+  companycategory: {
+    type: String
   },
   CreatedAt: { type: Date, default: Date.now },
 });

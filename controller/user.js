@@ -469,12 +469,10 @@ userRouter.get("/me", UserAuthentication, async (req, res) => {
 userRouter.patch("/me/update", UserAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
-  const updateData = req.body;
   try {
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      { _id: decoded._id },
-      updateData
-    );
+    const updatedUser = await UserModel.find({ _id: decoded._id });
+    console.log("updated user", updatedUser);
+    
     return res.json({ status: "success", message: "User Details Updated" });
   } catch (error) {
     res.json({
