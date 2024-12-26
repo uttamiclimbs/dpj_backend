@@ -596,7 +596,8 @@ userRouter.get("/find/artist", UserAuthentication, async (req, res) => {
         { email: { $regex: regex } },
         { category: { $regex: regex } },
       ],
-    });
+      accountType: "artist", disabled: "false", verified: "true"
+    },{ password: 0, verified: 0, disabled: 0, CreatedAt: 0 });
 
     if (results.length === 0) {
       return res.json({ status: 'error', message: 'No matching records found' });
@@ -611,7 +612,7 @@ userRouter.get("/find/artist", UserAuthentication, async (req, res) => {
 
 userRouter.get("/listall/artist", UserAuthentication, async (req, res) => {
   try {
-    const results = await UserModel.find({accountType:"artist",disabled:"false",verified:"true"},{password:0,verified:0,disabled:0,CreatedAt:0});
+    const results = await UserModel.find({ accountType: "artist", disabled: "false", verified: "true" }, { password: 0, verified: 0, disabled: 0, CreatedAt: 0 });
 
     if (results.length === 0) {
       return res.json({ status: 'error', message: 'No Artist found' });
