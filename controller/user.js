@@ -51,6 +51,7 @@ const jwt = require("jsonwebtoken");
 const path = require("node:path");
 const crypt = require("crypto");
 const multer = require("multer");
+const fs = require('fs');
 const uploadPath = path.join(__dirname, "../public/profile");
 const express = require("express");
 const { oauth2client } = require("../service/googleConfig");
@@ -466,7 +467,7 @@ userRouter.get("/me", UserAuthentication, async (req, res) => {
 
 // Updating User Detail's in the Database.
 
-userRouter.patch("/me/update",upload.fields([
+userRouter.patch("/me/update", upload.fields([
   { name: 'profile', maxCount: 1 }, // Single profile image
   { name: 'banner', maxCount: 1 }  // Single banner image
 ]), UserAuthentication, async (req, res) => {
@@ -499,6 +500,26 @@ userRouter.patch("/me/update",upload.fields([
     updatedUser.sociallinks.linkdein = req.body?.linkdein || updatedUser.sociallinks.linkdein;
     updatedUser.sociallinks.twitter = req.body?.twitter || updatedUser.sociallinks.twitter;
     updatedUser.sociallinks.instagram = req.body?.instagram || updatedUser.sociallinks.instagram;
+
+    // Removing Profile Images
+    fs.unlink(`${uploadPath}/${updatedUser.banner}`, (err) => {
+      if (err) {
+        console.error('Error deleting old file:', err);
+      } else {
+        console.log('Old file deleted successfully');
+      }
+    });
+
+    // Removing Banner Images
+    fs.unlink(`${uploadPath}/${updatedUser.profile}`, (err) => {
+      if (err) {
+        console.error('Error deleting old file:', err);
+      } else {
+        console.log('Old file deleted successfully');
+      }
+    });
+
+
 
     updatedUser.profile = profile.filename;
     updatedUser.banner = banner.filename;
