@@ -466,13 +466,54 @@ userRouter.get("/me", UserAuthentication, async (req, res) => {
 
 // Updating User Detail's in the Database.
 
-userRouter.patch("/me/update", UserAuthentication, async (req, res) => {
+userRouter.patch("/me/update",upload.fields([
+  { name: 'profile', maxCount: 1 }, // Single profile image
+  { name: 'banner', maxCount: 1 }  // Single banner image
+]), UserAuthentication, async (req, res) => {
+  const profile = req.files['profile'][0];
+  const banner = req.files['banner'][0];
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
+
   try {
-    const updatedUser = await UserModel.find({ _id: decoded._id });
-    console.log("updated user", updatedUser);
-    
+    const updatedUser = await UserModel.findOne({ _id: decoded._id });
+
+
+    updatedUser.name = req.body?.name;
+    updatedUser.email = req.body?.email;
+    updatedUser.phoneno = req.body?.phoneno;
+    updatedUser.dob = req.body?.dob;
+    updatedUser.category = req.body?.category;
+    updatedUser.gender = req.body?.gender;
+
+    if (!updatedUser.address) {
+      updatedUser.address = {}; // Initialize address if it doesn't exist
+    }
+    updatedUser.address.country = req.body?.country || updatedUser.address.country;
+    updatedUser.address.state = req.body?.state || updatedUser.address.state;
+    updatedUser.address.city = req.body?.city || updatedUser.address.city;
+    updatedUser.address.address = req.body?.address || updatedUser.address.address;
+
+    if (!updatedUser.sociallinks) {
+      updatedUser.sociallinks = {}; // Initialize sociallinks if it doesn't exist
+    }
+    updatedUser.sociallinks.facebook = req.body?.facebook || updatedUser.sociallinks.facebook;
+    updatedUser.sociallinks.linkdein = req.body?.linkdein || updatedUser.sociallinks.linkdein;
+    updatedUser.sociallinks.tiwtter = req.body?.tiwtter || updatedUser.sociallinks.tiwtter;
+    updatedUser.sociallinks.instagram = req.body?.instagram || updatedUser.sociallinks.instagram;
+
+    updatedUser.profile = profile.filename;
+    updatedUser.banner = banner.filename;
+
+    if (updatedUser?.accountType === "artist") {
+      updatedUser.skills = req.body?.skills;
+    }
+
+    if (updatedUser?.accountType === "professional") {
+      updatedUser.companycategory = req.body?.companycategory;
+    }
+
+    await updatedUser.save()
     return res.json({ status: "success", message: "User Details Updated" });
   } catch (error) {
     res.json({
