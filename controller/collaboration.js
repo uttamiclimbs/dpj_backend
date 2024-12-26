@@ -91,10 +91,10 @@ CollabRouter.post("/add/collaborators/:id", ArtistAuthentication, async (req, re
 
 CollabRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banner"), async (req, res) => {
   const { id } = req.params;
-  const { title, description, address, category, startDate, endDate, startTime, endTime, } = req.body;
-  const startDateTime = new Date(`${startDate}T${startTime}`);
-  const endDateTime = new Date(`${endDate}T${endTime}`);
-  const fileName = req.file.filename;
+  // const { title, description, address, category, startDate, endDate, startTime, endTime, } = req.body;
+  // const startDateTime = new Date(`${startDate}T${startTime}`);
+  // const endDateTime = new Date(`${endDate}T${endTime}`);
+  const fileName = req.file?.filename;
   try {
     const details = await EventModel.find({ _id: id });
     if (!details) {
@@ -111,17 +111,40 @@ CollabRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banne
       });
     }
 
+    let startDateTime = new Date(`${details[0].startDate}T${details[0].startTime}`);
+    let endDateTime = new Date(`${details[0].endDate}T${details[0].endTime}`);
+
+    if (req.body.startDate) {
+      startDateTime = new Date(`${req.body.startDate}T${details[0].startTime}`);
+    }
+
+    if (req.body.startTime) {
+      startDateTime = new Date(`${details[0].startDate}T${req.body.startTime}`);
+    }
+
+    if (req.body.endDate) {
+      endDateTime = new Date(`${req.body.endDate}T${details[0].endTime}`);
+
+    }
+
+    if (req.body.endTime) {
+      endDateTime = new Date(`${details[0].endDate}T${req.body.endTime}`);
+
+    }
+
     const updatedData = {
       ...req.body, // Update other fields if provided
-      image: req.file ? fileName : details[0].banner, // Use the new image if uploaded
+      banner: req.file ? fileName : details[0].banner, // Use the new image if uploaded
+      startDateTime:startDateTime,
+      endDateTime:endDateTime
     };
 
     const updatedItem = await EventModel.findByIdAndUpdate(id, updatedData, {
       new: true, // Return the updated document
     });
 
-    console.log("updated value ",updatedItem);
-    
+    console.log("updated value ", updatedItem);
+
 
     res.json({ status: "success", message: `Event Successfully Updatec` });
 
