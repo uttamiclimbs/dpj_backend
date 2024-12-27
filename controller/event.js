@@ -4,7 +4,7 @@ const path = require("node:path");
 const fs = require('fs');
 const jwt = require("jsonwebtoken");
 const { EventModel } = require("../model/event.model");
-const { ArtistAuthentication } = require("../middleware/Authentication");
+const { ArtistAuthentication,ProfessionalAuthentication } = require("../middleware/Authentication");
 const { CollabModel } = require("../model/collaboration.model");
 const EventRouter = express.Router();
 const uploadPath = path.join(__dirname, "../public/events");
@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-EventRouter.post("/add", upload.single("banner"), ArtistAuthentication, async (req, res) => {
+EventRouter.post("/add", upload.single("banner"), ProfessionalAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   const fileName = req.file.filename;
@@ -37,7 +37,7 @@ EventRouter.post("/add", upload.single("banner"), ArtistAuthentication, async (r
     startDateTime: startDateTime,
     endDateTime: endDateTime,
     eventType: eventType,
-    type: "Collaboration",
+    type: "Event",
     createdBy: decoded._id,
     startTime: startTime,
     startDate: startDate,
@@ -45,10 +45,10 @@ EventRouter.post("/add", upload.single("banner"), ArtistAuthentication, async (r
     endDate: endDate,
   });
   try {
-    savedDocument = await collaboration.save();
+    await collaboration.save();
     res.json({
       status: "success",
-      message: `Collaboration Created Successfully`,
+      message: `Event Created Successfully`,
     });
   } catch (error) {
     res.json({

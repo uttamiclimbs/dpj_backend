@@ -10,7 +10,7 @@ router
     .use("/job", JobRouter)
     .use("/collaborator", CollabRouter)
     .use("/post", PostRouter)
-    .use("event", EventRouter)
+    .use("/event", EventRouter)
 
 
 module.exports = router;
