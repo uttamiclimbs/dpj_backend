@@ -588,16 +588,18 @@ UserRouter.post("/documentupload", upload.single("document"), UserAuthentication
 // Get List of All The Artists From Server 
 
 UserRouter.get("/find/artist", UserAuthentication, async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decoded = jwt.verify(token, "Authentication");
   const { search } = req.query;
   const regex = new RegExp(search, 'i');
   try {
     const results = await UserModel.find({
       $or: [
-        { email: { $regex: regex } },
+        { email: { $regex: regex, $ne: decoded.email } },
         { category: { $regex: regex } },
       ],
       accountType: "artist", disabled: "false", verified: "true"
-    },{ password: 0, verified: 0, disabled: 0, CreatedAt: 0 });
+    }, { password: 0, verified: 0, disabled: 0, CreatedAt: 0 });
 
     if (results.length === 0) {
       return res.json({ status: 'error', message: 'No matching records found' });
@@ -611,8 +613,10 @@ UserRouter.get("/find/artist", UserAuthentication, async (req, res) => {
 // Get List of All The Artists From Server User Which needs to be shown in Artist Search Page
 
 UserRouter.get("/listall/artist", UserAuthentication, async (req, res) => {
+  const token = req.headers.authorization.split(" ")[1];
+  const decoded = jwt.verify(token, "Authentication");
   try {
-    const results = await UserModel.find({ accountType: "artist", disabled: "false", verified: "true" }, { password: 0, verified: 0, disabled: 0, CreatedAt: 0 });
+    const results = await UserModel.find({ email: { $ne: decoded.email }, accountType: "artist", disabled: "false", verified: "true" }, { password: 0, verified: 0, disabled: 0, CreatedAt: 0 });
 
     if (results.length === 0) {
       return res.json({ status: 'error', message: 'No Artist found' });
