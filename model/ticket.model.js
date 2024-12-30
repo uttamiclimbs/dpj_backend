@@ -1,11 +1,13 @@
 const mongoose = require("mongoose")
+const { ObjectId } = mongoose.Schema.Types;
+
 const ticketSchema = mongoose.Schema({
     eventId: {
-        type: String,
+        type: ObjectId,
         required: true
     },
     createdBy: {
-        type: String,
+        type: ObjectId,
         required: true
     },
     price: {

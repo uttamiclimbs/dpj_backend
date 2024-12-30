@@ -47,7 +47,7 @@ const eventschema = mongoose.Schema({
     },
     link: String,
     country:String,
-    starte:String,
+    state:String,
     city:String,
     type: {
         type: String,

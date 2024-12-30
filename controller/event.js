@@ -4,8 +4,9 @@ const path = require("node:path");
 const fs = require('fs');
 const jwt = require("jsonwebtoken");
 const { EventModel } = require("../model/event.model");
-const { ArtistAuthentication,ProfessionalAuthentication } = require("../middleware/Authentication");
+const { ArtistAuthentication, ProfessionalAuthentication } = require("../middleware/Authentication");
 const { CollabModel } = require("../model/collaboration.model");
+const { TicketModel } = require("../model/ticket.model");
 const EventRouter = express.Router();
 const uploadPath = path.join(__dirname, "../public/events");
 
@@ -22,12 +23,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 EventRouter.post("/add", upload.single("banner"), async (req, res) => {
-  console.log("body", req.body);
-  
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   const fileName = req.file.filename;
-  const { title, description, eventType, category, startDate, endDate, startTime, endTime, tickets } = req.body;
+  const { title, description, eventType, category, startDate, endDate, startTime, endTime, tickets, country, state, city } = req.body;
   const startDateTime = new Date(`${startDate}T${startTime}`);
   const endDateTime = new Date(`${endDate}T${endTime}`);
   const collaboration = new EventModel({
@@ -46,22 +45,23 @@ EventRouter.post("/add", upload.single("banner"), async (req, res) => {
     startDate: startDate,
     endTime: endTime,
     endDate: endDate,
+    country: country,
+    state: state,
+    city: city
   });
   try {
-   const eventDetails =  await collaboration.save();
-
-
-   if(tickets){
-    const ticketData = tickets.map((ticket) => {
-      return {
-        eventId: eventDetails._id,
-        createdBy: decoded._id,
-        price: ticket.price,
-        name: ticket.name,
-      }
-    });
-    await TicketModel.insertMany(ticketData);
-   }
+    const eventDetails = await collaboration.save();
+    if (tickets) {
+      const ticketData = tickets.map((ticket) => {
+        return {
+          eventId: eventDetails._id,
+          createdBy: decoded._id,
+          price: ticket.price,
+          name: ticket.name,
+        }
+      });
+      await TicketModel.insertMany(ticketData);
+    }
     res.json({
       status: "success",
       message: `Event Created Successfully`,
@@ -75,34 +75,6 @@ EventRouter.post("/add", upload.single("banner"), async (req, res) => {
 }
 );
 
-EventRouter.post("/add/collaborators/:id", ArtistAuthentication, async (req, res) => {
-  const { id } = req.params;
-  const { collaborators } = req.body;
-  let addCollaborators = [];
-  for (let index = 0; index < collaborators.length; index++) {
-    addCollaborators.push({
-      userId: collaborators[index]._id,
-      email: collaborators[index].email,
-      name: collaborators[index].name,
-      amount: collaborators[index].amount,
-      eventId: id,
-    });
-  }
-  try {
-    const result = await CollabModel.insertMany(addCollaborators);
-    res.json({
-      status: "success",
-      message:
-        "Successfully Added Collaborators in The Following Collaboration Event",
-    });
-  } catch (error) {
-    res.json({
-      status: "error",
-      message: `Failed To Add New Event ${error.message}`,
-    });
-  }
-}
-);
 
 EventRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banner"), async (req, res) => {
   const { id } = req.params;
@@ -136,12 +108,10 @@ EventRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banner
 
     if (req.body.endDate) {
       endDateTime = new Date(`${req.body.endDate}T${details[0].endTime}`);
-
     }
 
     if (req.body.endTime) {
       endDateTime = new Date(`${details[0].endDate}T${req.body.endTime}`);
-
     }
 
     const updatedData = {
@@ -165,32 +135,54 @@ EventRouter.patch("/edit/basic/:id", ArtistAuthentication, upload.single("banner
 }
 );
 
-EventRouter.post("/edit/collaborators/:id", ArtistAuthentication, async (req, res) => {
+EventRouter.post("/add/tickets/:id", ArtistAuthentication, async (req, res) => {
   const { id } = req.params;
   const token = req.headers.authorization.split(" ")[1];
-  const { collaborators } = req.body;
   const decoded = jwt.verify(token, "Authentication");
-  const fileName = req.file.filename;
+  const { tickets } = req.body;
   try {
-    const details = await EventModel.find({ eventId: id });
-    res.json({ status: "success", message: `Event Successfully Updated` });
+    const ticketData = tickets.map((ticket) => {
+      return {
+        eventId: id,
+        createdBy: decoded._id,
+        price: ticket.price,
+        name: ticket.name,
+      }
+    });
+    await TicketModel.insertMany(ticketData);
+    res.json({ status: "success", message: `Successfully Added New Ticket Category` });
   } catch (error) {
     res.json({
       status: "error",
-      message: `Failed To Add New Event ${error.message}`,
+      message: `Failed To Add New Tickets ${error.message}`,
     });
   }
 }
 );
 
-
-EventRouter.get("/list", ArtistAuthentication, async (req, res) => {
+// Get List of Events Created By User
+EventRouter.get("/lists", ArtistAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   try {
-    const list = await EventModel.find({ createdBy: decoded._id, type: "Collaboration" })
+
+    const list = await EventModel.aggregate([
+      {
+        $match: { createdBy: decoded._id, type: "Event" }
+      },
+      {
+        $lookup: {
+          from: 'tickets',
+          localField: '_id',
+          foreignField: 'eventId',
+          as: 'tickets'
+        }
+      }
+    ]);
+
+    // const list = await EventModel.find({ createdBy: decoded._id, type: "Event" })
     if (list.length == 0) {
-      res.json({ status: "error", message: "No Collaboration Event Found" })
+      res.json({ status: "error", message: "No Event List Found" })
     } else {
       res.json({ status: "success", data: list })
     }
@@ -199,58 +191,34 @@ EventRouter.get("/list", ArtistAuthentication, async (req, res) => {
   }
 });
 
-
-EventRouter.get("/request/list", ArtistAuthentication, async (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const decoded = jwt.verify(token, "Authentication");
+// Get List of Events which User Can Book
+EventRouter.get("/lists/available", ArtistAuthentication, async (req, res) => {
   try {
-    const list = await CollabModel.find({ userId: decoded._id })
+    const list = await EventModel.aggregate([
+      {
+        $match: { type: "Event"}
+      },
+      {
+        $lookup: {
+          from: 'tickets',
+          localField: '_id',
+          foreignField: 'eventId',
+          as: 'tickets'
+        }
+      }
+    ]);
+
+    // const list = await EventModel.find({ createdBy: decoded._id, type: "Event" })
     if (list.length == 0) {
-      res.json({ status: "error", message: "No Collaboration Request Found" })
+      res.json({ status: "error", message: "No Event List Found" })
     } else {
       res.json({ status: "success", data: list })
     }
   } catch (error) {
-    res.json({ status: "error", message: `Unable To Find Collaboration Events Requests ${error.message}` })
+    res.json({ status: "error", message: `Unable To Find Collaboration Events ${error.message}` })
   }
 });
 
-
-EventRouter.get("/list/artists/:id", ArtistAuthentication, async (req, res) => {
-  const { id } = req.params
-  const token = req.headers.authorization.split(" ")[1];
-  const decoded = jwt.verify(token, "Authentication");
-  try {
-    const list = await CollabModel.find({ eventId: id })
-    if (list.length == 0) {
-      res.json({ status: "error", message: "No Collaborators Added In This Event " })
-    } else {
-      res.json({ status: "success", data: list })
-    }
-  } catch (error) {
-    res.json({ status: "error", message: `Unable To Find Collaborators List In This Events ${error.message}` })
-  }
-});
-
-
-EventRouter.post("/update/collab/status/:id", ArtistAuthentication, async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-  const token = req.headers.authorization.split(" ")[1];
-  const decoded = jwt.verify(token, "Authentication");
-  try {
-    const list = await CollabModel.find({ _id: id, userId: decoded._id })
-    if (list.length == 0) {
-      res.json({ status: "error", message: "No Collaborators Added In This Event " })
-    } else {
-      list[0].status = status
-      await list[0].save()
-      res.json({ status: "success", message: "Updated Collaborator Status" })
-    }
-  } catch (error) {
-    res.json({ status: "error", message: `Unable To Update Collaborators Status In This Events ${error.message}` })
-  }
-});
 
 
 module.exports = { EventRouter };

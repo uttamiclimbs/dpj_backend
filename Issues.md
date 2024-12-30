@@ -43,3 +43,43 @@
     - `POST /api/upload`: Upload a file
     - `GET /api/upload/{fileId}`: Retrieve a file
     - `DELETE /api/upload/{fileId}`: Delete a file
+    
+    ## Admin Panel Functionality
+
+    1. **User Management**
+        - View all users
+        - Edit user details
+        - Delete users
+        - Manage user roles and permissions
+
+    2. **Post Management**
+        - View all posts
+        - Edit post details
+        - Delete posts
+        - Manage comments on posts
+
+    3. **Collaboration Management**
+        - View all collaborations
+        - Edit collaboration details
+        - Delete collaborations
+        - Manage collaboration requests and statuses
+
+    4. **Event Management**
+        - View all events
+        - Edit event details
+        - Delete events
+
+    5. **Issue Management**
+        - View all issues
+        - Edit issue details
+        - Delete issues
+        - Manage comments on issues
+
+    6. **Notification Management**
+        - View all notifications
+        - Edit notification details
+        - Delete notifications
+
+    7. **File Management**
+        - View all uploaded files
+        - Delete files
