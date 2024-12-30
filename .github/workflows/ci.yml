@@ -19,6 +19,6 @@ jobs:
       run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 
     - name: Build the Docker Image
-      run: docker build -t uttamiclimbs/dpj_backend .
+      run: docker build -t uttamiclimb/dpj_backend .
     - name: Push to Dockerhub
-      run: docker push uttamiclimbs/dpj_backend:latest
+      run: docker push uttamiclimb/dpj_backend:latest
