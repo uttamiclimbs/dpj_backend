@@ -467,10 +467,7 @@ UserRouter.get("/me", UserAuthentication, async (req, res) => {
 
 // Updating User Detail's in the Database.
 
-UserRouter.patch("/me/update", upload.fields([
-  { name: 'profile', maxCount: 1 }, // Single profile image
-  { name: 'banner', maxCount: 1 }  // Single banner image
-]), UserAuthentication, async (req, res) => {
+UserRouter.patch("/me/update", upload.fields([{ name: 'profile', maxCount: 1 }, { name: 'banner', maxCount: 1 }]), UserAuthentication, async (req, res) => { 
   const profile = req.files['profile'][0];
   const banner = req.files['banner'][0];
   const token = req.headers.authorization.split(" ")[1];
