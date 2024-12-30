@@ -21,31 +21,47 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-EventRouter.post("/add", upload.single("banner"), ProfessionalAuthentication, async (req, res) => {
+EventRouter.post("/add", upload.single("banner"), async (req, res) => {
+  console.log("body", req.body);
+  
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   const fileName = req.file.filename;
-  const { title, description, address, eventType, category, startDate, endDate, startTime, endTime, } = req.body;
+  const { title, description, eventType, category, startDate, endDate, startTime, endTime, tickets } = req.body;
   const startDateTime = new Date(`${startDate}T${startTime}`);
   const endDateTime = new Date(`${endDate}T${endTime}`);
   const collaboration = new EventModel({
-    address: address,
+    address: req.body?.address,
+    link: req.body?.link,
     title: title,
     banner: fileName,
+    eventType: eventType,
     description: description,
     category: category,
-    startDateTime: startDateTime,
-    endDateTime: endDateTime,
-    eventType: eventType,
     type: "Event",
     createdBy: decoded._id,
+    startDateTime: startDateTime,
+    endDateTime: endDateTime,
     startTime: startTime,
     startDate: startDate,
     endTime: endTime,
     endDate: endDate,
   });
   try {
-    await collaboration.save();
+   const eventDetails =  await collaboration.save();
+
+
+   if(tickets){
+    const ticketData = tickets.map((ticket) => {
+      return {
+        eventId: eventDetails._id,
+        createdBy: decoded._id,
+        price: ticket.price,
+        name: ticket.name,
+      }
+    });
+    await TicketModel.insertMany(ticketData);
+   }
     res.json({
       status: "success",
       message: `Event Created Successfully`,

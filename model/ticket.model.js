@@ -16,10 +16,7 @@ const ticketSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    quantity: {
-        type: Number,
-        required: true
-    },
+    quantity: Number,
     CreatedAt: { type: Date, default: Date.now }, // Save The Time When the following Job was created 
 })
 const TicketModel = mongoose.model("tickets",ticketSchema)

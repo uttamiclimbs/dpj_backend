@@ -45,6 +45,10 @@ const eventschema = mongoose.Schema({
         type: String,
         required: true
     },
+    link: String,
+    country:String,
+    starte:String,
+    city:String,
     type: {
         type: String,
         required: true,

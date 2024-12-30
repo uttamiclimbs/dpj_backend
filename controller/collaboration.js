@@ -25,7 +25,7 @@ CollabRouter.post("/add", upload.single("banner"), ArtistAuthentication, async (
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
   const fileName = req.file.filename;
-  const { title, description, address, eventType, category, startDate, endDate, startTime, endTime, } = req.body;
+  const { title, description, address, eventType, category, startDate, endDate, startTime, endTime, country, state, city } = req.body;
   const startDateTime = new Date(`${startDate}T${startTime}`);
   const endDateTime = new Date(`${endDate}T${endTime}`);
   const collaboration = new EventModel({
@@ -43,6 +43,9 @@ CollabRouter.post("/add", upload.single("banner"), ArtistAuthentication, async (
     startDate: startDate,
     endTime: endTime,
     endDate: endDate,
+    country: country,
+    state: state,
+    city: city
   });
   try {
     savedDocument = await collaboration.save();
@@ -167,7 +170,7 @@ CollabRouter.post("/edit/collaborators/:id", ArtistAuthentication, async (req, r
 }
 );
 
-
+// Get All Collaboration Events Created By User
 CollabRouter.get("/list", ArtistAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
@@ -183,7 +186,7 @@ CollabRouter.get("/list", ArtistAuthentication, async (req, res) => {
   }
 });
 
-
+// Get All Collaboration Events Requests Sent To User
 CollabRouter.get("/request/list", ArtistAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, "Authentication");
@@ -199,7 +202,7 @@ CollabRouter.get("/request/list", ArtistAuthentication, async (req, res) => {
   }
 });
 
-
+// Get All Collaborator List Whom Request Sent For Collaboration
 CollabRouter.get("/list/artists/:id", ArtistAuthentication, async (req, res) => {
   const { id } = req.params
   const token = req.headers.authorization.split(" ")[1];
@@ -216,7 +219,7 @@ CollabRouter.get("/list/artists/:id", ArtistAuthentication, async (req, res) => 
   }
 });
 
-
+// Update Collaborator Status 
 CollabRouter.post("/update/collab/status/:id", ArtistAuthentication, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
