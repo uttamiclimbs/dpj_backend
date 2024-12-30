@@ -467,7 +467,7 @@ UserRouter.get("/me", UserAuthentication, async (req, res) => {
 
 // Updating User Detail's in the Database.
 
-UserRouter.patch("/me/update", upload.fields([{ name: 'profile', maxCount: 1 }, { name: 'banner', maxCount: 1 }]), UserAuthentication, async (req, res) => { 
+UserRouter.patch("/me/update", upload.fields([{ name: 'profile', maxCount: 1 }, { name: 'banner', maxCount: 1 }]), UserAuthentication, async (req, res) => {
   const profile = req.files['profile'][0];
   const banner = req.files['banner'][0];
   const token = req.headers.authorization.split(" ")[1];
@@ -626,10 +626,7 @@ UserRouter.get("/listall/artist", UserAuthentication, async (req, res) => {
 
 // Add Basic Profile Details 
 
-UserRouter.post("/basicdetails/update", upload.fields([
-  { name: 'profile', maxCount: 1 }, // Single profile image
-  { name: 'banner', maxCount: 1 }  // Single banner image
-]), UserAuthentication, async (req, res) => {
+UserRouter.post("/basicdetails/update", upload.fields([{ name: 'profile', maxCount: 1 }, { name: 'banner', maxCount: 1 }]), UserAuthentication, async (req, res) => {
   const token = req.headers.authorization.split(" ")[1];
   const { gender, country, state, city, dob, category, } = req.body;
   const profile = req.files['profile'][0];
